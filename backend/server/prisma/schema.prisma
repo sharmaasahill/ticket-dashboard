@@ -13,3 +13,114 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// --- Domain models ---
+
+enum TicketStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  isSuperUser Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  projects       Project[]    @relation("OwnerProjects")
+  tickets        Ticket[]     @relation("AuthorTickets")
+  activities     Activity[]
+  memberships    Membership[]
+  updatedTickets Ticket[]     @relation("UpdatedByTickets")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  owner      User         @relation("OwnerProjects", fields: [ownerId], references: [id])
+  tickets    Ticket[]
+  activities Activity[]
+  members    Membership[]
+
+  @@index([ownerId])
+}
+
+model Membership {
+  id        String @id @default(cuid())
+  userId    String
+  projectId String
+  role      String @default("member")
+
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId])
+  @@index([projectId])
+}
+
+model Ticket {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  status      TicketStatus   @default(TODO)
+  priority    TicketPriority @default(MEDIUM)
+  projectId   String
+  authorId    String
+  updatedById String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  project    Project    @relation(fields: [projectId], references: [id])
+  author     User       @relation("AuthorTickets", fields: [authorId], references: [id])
+  updatedBy  User?      @relation("UpdatedByTickets", fields: [updatedById], references: [id])
+  activities Activity[]
+
+  @@index([projectId])
+  @@index([authorId])
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  type      String
+  message   String
+  projectId String
+  ticketId  String?
+  actorId   String
+  createdAt DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id])
+  ticket  Ticket? @relation(fields: [ticketId], references: [id])
+  actor   User    @relation(fields: [actorId], references: [id])
+
+  @@index([projectId])
+  @@index([ticketId])
+}
+
+// OTP codes for passwordless login
+model OtpToken {
+  id         String    @id @default(cuid())
+  email      String
+  code       String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
+}
