@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
 import { useParams } from "next/navigation";
+import { useUi } from "@/store/useUi";
+import { Notifications } from "./notifications";
 
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
@@ -38,18 +40,36 @@ export default function ProjectDetailPage() {
 
   if (!project) return <div style={{ padding: 24 }}>Loading...</div>;
 
+  const { superOn, toggleSuper } = useUi();
+
   return (
     <div style={{ maxWidth: 960, margin: '24px auto' }}>
       <h1 style={{ fontSize: 24, fontWeight: 600 }}>{project.name}</h1>
+      <div style={{ margin: '8px 0' }}>
+        <button className="btn" onClick={() => {
+          if (!superOn) {
+            const pwd = prompt('Enter super-user password');
+            toggleSuper(pwd ?? undefined);
+          } else toggleSuper();
+        }}>{superOn ? 'Super: ON' : 'Super: OFF'}</button>
+      </div>
       <div style={{ display: 'flex', gap: 8, margin: '12px 0' }}>
         <input className="input" placeholder="Ticket title" value={title} onChange={(e) => setTitle(e.target.value)} />
         <button className="btn" onClick={createTicket}>Add Ticket</button>
       </div>
       <ul>
         {(project.tickets ?? []).map((t: any) => (
-          <li key={t.id} style={{ padding: 8, borderBottom: '1px solid #eee' }}>{t.title}</li>
+          <li key={t.id} style={{ padding: 8, borderBottom: '1px solid #eee' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>{t.title}</span>
+              {superOn ? <span style={{ color: '#6b7280' }}>by {t.authorId ?? '—'}</span> : null}
+            </div>
+          </li>
         ))}
       </ul>
+      <div style={{ marginTop: 16 }}>
+        <Notifications projectId={projectId} />
+      </div>
     </div>
   );
 }
