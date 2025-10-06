@@ -32,7 +32,10 @@ export default function Home() {
     setLoading(true);
     try {
       await verifyOtp(email, code);
-      redirect("/projects");
+      // Use router.push for better navigation
+      if (typeof window !== "undefined") {
+        window.location.href = "/projects";
+      }
     } catch (error) {
       console.error('Failed to verify OTP:', error);
     } finally {

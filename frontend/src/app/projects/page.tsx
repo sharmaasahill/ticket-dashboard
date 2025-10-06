@@ -19,6 +19,13 @@ export default function ProjectsPage() {
     api.get('/projects').then(r => setItems(r.data)).catch(() => logout());
   }, [token, logout]);
 
+  // Initialize auth token on mount
+  useEffect(() => {
+    if (token) {
+      setAuthToken(token);
+    }
+  }, []);
+
   async function create() {
     if (!name) return;
     try {

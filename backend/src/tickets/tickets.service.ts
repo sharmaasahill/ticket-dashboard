@@ -45,9 +45,21 @@ export class TicketsService {
 
   async update(id: string, input: Record<string, unknown> & { actorId?: string }) {
     const { actorId, ...data } = input as any;
+    
+    // Find or create a default user for the actor
+    let actorIdToUse = actorId;
+    if (!actorIdToUse) {
+      const defaultUser = await this.prisma.user.upsert({
+        where: { email: 'system@ticket-dashboard.local' },
+        update: {},
+        create: { email: 'system@ticket-dashboard.local', name: 'System' }
+      });
+      actorIdToUse = defaultUser.id;
+    }
+
     const ticket = await this.prisma.ticket.update({ where: { id }, data: data as any });
     this.gateway.emitTicketUpdated(ticket.projectId, { type: 'updated', ticket });
-    await this.activities.log({ projectId: ticket.projectId, ticketId: ticket.id, actorId: actorId ?? 'system', type: 'update', message: `Ticket updated: ${ticket.title}` });
+    await this.activities.log({ projectId: ticket.projectId, ticketId: ticket.id, actorId: actorIdToUse, type: 'update', message: `Ticket updated: ${ticket.title}` });
     await this.notifications.notifyProjectMembersIfOffline(ticket.projectId, `Ticket updated: ${ticket.title}`);
     return ticket;
   }

@@ -10,6 +10,8 @@ import { ProjectsModule } from './projects/projects.module';
 import { TicketsModule } from './tickets/tickets.module';
 import { AdminModule } from './admin/admin.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ActivitiesModule } from './activities/activities.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     TicketsModule,
     AdminModule,
     NotificationsModule,
+    ActivitiesModule,
+    RealtimeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

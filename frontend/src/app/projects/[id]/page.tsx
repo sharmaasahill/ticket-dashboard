@@ -14,6 +14,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -82,6 +83,50 @@ function DraggableTicket({ ticket, superOn }: { ticket: Ticket; superOn: boolean
   );
 }
 
+// Droppable Column Component
+function DroppableColumn({ 
+  id, 
+  title, 
+  icon, 
+  tickets, 
+  superOn, 
+  className 
+}: { 
+  id: string; 
+  title: string; 
+  icon: string; 
+  tickets: Ticket[]; 
+  superOn: boolean; 
+  className: string; 
+}) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+
+  return (
+    <div 
+      ref={setNodeRef}
+      className={`kanban-column ${className}`}
+      style={{
+        backgroundColor: isOver ? '#f0f9ff' : undefined,
+        borderColor: isOver ? '#3b82f6' : undefined,
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: '#64748b' }}>
+          {icon} {title}
+        </h3>
+        <span className={`status-badge status-${className}`}>
+          {tickets.length}
+        </span>
+      </div>
+      <SortableContext items={tickets.map(t => t.id)} strategy={verticalListSortingStrategy}>
+        {tickets.map((ticket) => (
+          <DraggableTicket key={ticket.id} ticket={ticket} superOn={superOn} />
+        ))}
+      </SortableContext>
+    </div>
+  );
+}
+
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
@@ -130,6 +175,13 @@ export default function ProjectDetailPage() {
       socket.off('ticket:updated');
     };
   }, [projectId, token, logout, router]);
+
+  // Initialize auth token on mount
+  useEffect(() => {
+    if (token) {
+      setAuthToken(token);
+    }
+  }, []);
 
   async function createTicket() {
     if (!title) return;
@@ -241,62 +293,30 @@ export default function ProjectDetailPage() {
           onDragEnd={handleDragEnd}
         >
           <div className="grid grid-3">
-            {/* TODO Column */}
-            <div className="kanban-column todo" id="TODO">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: '#64748b' }}>
-                  📋 To Do
-                </h3>
-                <span className="status-badge status-todo">
-                  {(project.tickets ?? []).filter(t => t.status === 'TODO').length}
-                </span>
-              </div>
-              <SortableContext items={(project.tickets ?? []).filter(t => t.status === 'TODO').map(t => t.id)} strategy={verticalListSortingStrategy}>
-                {(project.tickets ?? [])
-                  .filter(t => t.status === 'TODO')
-                  .map((t: Ticket) => (
-                    <DraggableTicket key={t.id} ticket={t} superOn={superOn} />
-                  ))}
-              </SortableContext>
-            </div>
-
-            {/* IN PROGRESS Column */}
-            <div className="kanban-column in-progress" id="IN_PROGRESS">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: '#92400e' }}>
-                  ⚡ In Progress
-                </h3>
-                <span className="status-badge status-in-progress">
-                  {(project.tickets ?? []).filter(t => t.status === 'IN_PROGRESS').length}
-                </span>
-              </div>
-              <SortableContext items={(project.tickets ?? []).filter(t => t.status === 'IN_PROGRESS').map(t => t.id)} strategy={verticalListSortingStrategy}>
-                {(project.tickets ?? [])
-                  .filter(t => t.status === 'IN_PROGRESS')
-                  .map((t: Ticket) => (
-                    <DraggableTicket key={t.id} ticket={t} superOn={superOn} />
-                  ))}
-              </SortableContext>
-            </div>
-
-            {/* DONE Column */}
-            <div className="kanban-column done" id="DONE">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: '#065f46' }}>
-                  ✅ Done
-                </h3>
-                <span className="status-badge status-done">
-                  {(project.tickets ?? []).filter(t => t.status === 'DONE').length}
-                </span>
-              </div>
-              <SortableContext items={(project.tickets ?? []).filter(t => t.status === 'DONE').map(t => t.id)} strategy={verticalListSortingStrategy}>
-                {(project.tickets ?? [])
-                  .filter(t => t.status === 'DONE')
-                  .map((t: Ticket) => (
-                    <DraggableTicket key={t.id} ticket={t} superOn={superOn} />
-                  ))}
-              </SortableContext>
-            </div>
+            <DroppableColumn
+              id="TODO"
+              title="To Do"
+              icon="📋"
+              tickets={(project.tickets ?? []).filter(t => t.status === 'TODO')}
+              superOn={superOn}
+              className="todo"
+            />
+            <DroppableColumn
+              id="IN_PROGRESS"
+              title="In Progress"
+              icon="⚡"
+              tickets={(project.tickets ?? []).filter(t => t.status === 'IN_PROGRESS')}
+              superOn={superOn}
+              className="in-progress"
+            />
+            <DroppableColumn
+              id="DONE"
+              title="Done"
+              icon="✅"
+              tickets={(project.tickets ?? []).filter(t => t.status === 'DONE')}
+              superOn={superOn}
+              className="done"
+            />
           </div>
 
           <DragOverlay>
