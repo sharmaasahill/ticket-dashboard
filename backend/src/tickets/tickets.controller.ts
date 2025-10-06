@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { TicketsService } from './tickets.service';
-import { TicketPriority, TicketStatus } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 class CreateTicketDto {
   @IsString()
@@ -16,11 +16,9 @@ class CreateTicketDto {
 
 class UpdateTicketDto {
   @IsOptional()
-  @IsEnum(TicketStatus)
-  status?: TicketStatus;
+  status?: Prisma.TicketUncheckedUpdateInput['status'];
   @IsOptional()
-  @IsEnum(TicketPriority)
-  priority?: TicketPriority;
+  priority?: Prisma.TicketUncheckedUpdateInput['priority'];
   @IsOptional()
   @IsString()
   title?: string;
@@ -46,7 +44,7 @@ export class TicketsController {
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateTicketDto) {
-    return this.tickets.update(id, dto);
+    return this.tickets.update(id, { ...dto });
   }
 }
 

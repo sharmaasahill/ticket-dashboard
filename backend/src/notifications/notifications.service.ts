@@ -16,11 +16,11 @@ export class NotificationsService {
     const offlineUsers = await this.prisma.user.findMany({
       where: { activities: { none: { createdAt: { gt: cutoff }, projectId } } },
     });
-    const offlineEmails = new Set(offlineUsers.map(u => u.email));
+    const offlineEmails = new Set(offlineUsers.map((u: { email: string }) => u.email));
     await Promise.all(
       members
-        .filter(m => offlineEmails.has(m.user.email))
-        .map(m => this.mail.sendOtp(m.user.email, message))
+        .filter((m: { user: { email: string } }) => offlineEmails.has(m.user.email))
+        .map((m: { user: { email: string } }) => this.mail.sendOtp(m.user.email, message))
     );
   }
 }

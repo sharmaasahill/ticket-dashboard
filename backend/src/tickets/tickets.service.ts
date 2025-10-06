@@ -18,17 +18,36 @@ export class TicketsService {
   }
 
   async create(input: { projectId: string; title: string; description?: string; authorId?: string }) {
-    const ticket = await this.prisma.ticket.create({ data: { ...input, authorId: input.authorId ?? undefined } as any });
+    // Find or create a default user for the author
+    let authorId = input.authorId;
+    if (!authorId) {
+      const defaultUser = await this.prisma.user.upsert({
+        where: { email: 'system@ticket-dashboard.local' },
+        update: {},
+        create: { email: 'system@ticket-dashboard.local', name: 'System' }
+      });
+      authorId = defaultUser.id;
+    }
+
+    const ticket = await this.prisma.ticket.create({ 
+      data: { 
+        projectId: input.projectId,
+        title: input.title,
+        description: input.description,
+        authorId: authorId
+      } 
+    });
     this.gateway.emitTicketUpdated(ticket.projectId, { type: 'created', ticket });
-    await this.activities.log({ projectId: ticket.projectId, ticketId: ticket.id, actorId: input.authorId ?? 'system', type: 'create', message: `Ticket created: ${ticket.title}` });
+    await this.activities.log({ projectId: ticket.projectId, ticketId: ticket.id, actorId: authorId, type: 'create', message: `Ticket created: ${ticket.title}` });
     await this.notifications.notifyProjectMembersIfOffline(ticket.projectId, `New ticket: ${ticket.title}`);
     return ticket;
   }
 
   async update(id: string, input: Record<string, unknown> & { actorId?: string }) {
-    const ticket = await this.prisma.ticket.update({ where: { id }, data: input });
+    const { actorId, ...data } = input as any;
+    const ticket = await this.prisma.ticket.update({ where: { id }, data: data as any });
     this.gateway.emitTicketUpdated(ticket.projectId, { type: 'updated', ticket });
-    await this.activities.log({ projectId: ticket.projectId, ticketId: ticket.id, actorId: (input as any).actorId ?? 'system', type: 'update', message: `Ticket updated: ${ticket.title}` });
+    await this.activities.log({ projectId: ticket.projectId, ticketId: ticket.id, actorId: actorId ?? 'system', type: 'update', message: `Ticket updated: ${ticket.title}` });
     await this.notifications.notifyProjectMembersIfOffline(ticket.projectId, `Ticket updated: ${ticket.title}`);
     return ticket;
   }

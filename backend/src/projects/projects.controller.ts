@@ -23,7 +23,7 @@ export class ProjectsController {
   }
 
   @Post()
-  create(@Body() dto: CreateProjectDto) {
+  async create(@Body() dto: CreateProjectDto) {
     return this.projects.create(dto);
   }
 

@@ -1,74 +1,321 @@
 "use client";
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, setAuthToken } from "@/lib/api";
 import { getSocket } from "@/lib/socket";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useUi } from "@/store/useUi";
+import { useAuth } from "@/store/useAuth";
 import { Notifications } from "./notifications";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+interface Project {
+  id: string;
+  name: string;
+  tickets?: Ticket[];
+}
+
+interface Ticket {
+  id: string;
+  title: string;
+  authorId?: string;
+  status: 'TODO' | 'IN_PROGRESS' | 'DONE';
+  description?: string;
+}
+
+// Draggable Ticket Component
+function DraggableTicket({ ticket, superOn }: { ticket: Ticket; superOn: boolean }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: ticket.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="ticket-card"
+    >
+      <div style={{ marginBottom: 8 }}>
+        <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 4px 0', color: '#1e293b' }}>
+          {ticket.title}
+        </h4>
+        {ticket.description && (
+          <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>
+            {ticket.description}
+          </p>
+        )}
+      </div>
+      {superOn && (
+        <div style={{ fontSize: 11, color: '#94a3b8', borderTop: '1px solid #f1f5f9', paddingTop: 8 }}>
+          Created by: {ticket.authorId ?? 'System'}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const { token, logout } = useAuth();
+  const { superOn, toggleSuper } = useUi();
   const projectId = params.id as string;
-  const [project, setProject] = useState<any | null>(null);
+  const [project, setProject] = useState<Project | null>(null);
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   useEffect(() => {
-    api.get(`/projects/${projectId}`).then(r => setProject(r.data));
+    if (!token) {
+      router.push("/");
+      return;
+    }
+    setAuthToken(token);
+    
+    api.get(`/projects/${projectId}`).then(r => setProject(r.data)).catch(() => logout());
+    
     const socket = getSocket();
     socket.emit('join', { projectId });
-    socket.on('ticket:updated', (payload) => {
-      if (!project) return;
-      if (payload.type === 'created') {
-        setProject({ ...project, tickets: [payload.ticket, ...(project.tickets ?? [])] });
-      } else if (payload.type === 'updated') {
-        setProject({
-          ...project,
-          tickets: (project.tickets ?? []).map((t: any) => t.id === payload.ticket.id ? payload.ticket : t),
-        });
-      }
+    socket.on('ticket:updated', (payload: { type: string; ticket: Ticket }) => {
+      setProject((prev: Project | null) => {
+        if (!prev) return prev;
+        if (payload.type === 'created') {
+          return { ...prev, tickets: [payload.ticket, ...(prev.tickets ?? [])] };
+        } else if (payload.type === 'updated') {
+          return {
+            ...prev,
+            tickets: (prev.tickets ?? []).map((t: Ticket) => t.id === payload.ticket.id ? payload.ticket : t),
+          };
+        }
+        return prev;
+      });
     });
     return () => {
       socket.off('ticket:updated');
     };
-  }, [projectId, project]);
+  }, [projectId, token, logout, router]);
 
   async function createTicket() {
     if (!title) return;
-    await api.post('/tickets', { projectId, title });
-    setTitle("");
+    try {
+      await api.post('/tickets', { projectId, title, description });
+      setTitle("");
+      setDescription("");
+    } catch (error) {
+      console.error('Failed to create ticket:', error);
+    }
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    setActiveId(event.active.id as string);
+  }
+
+  async function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over || !project) return;
+
+    const ticketId = active.id as string;
+    const newStatus = over.id as 'TODO' | 'IN_PROGRESS' | 'DONE';
+    
+    const ticket = project.tickets?.find(t => t.id === ticketId);
+    if (!ticket || ticket.status === newStatus) return;
+
+    try {
+      await api.patch(`/tickets/${ticketId}`, { status: newStatus });
+      // The realtime update will handle the UI update
+    } catch (error) {
+      console.error('Failed to update ticket status:', error);
+    }
   }
 
   if (!project) return <div style={{ padding: 24 }}>Loading...</div>;
 
-  const { superOn, toggleSuper } = useUi();
-
   return (
-    <div style={{ maxWidth: 960, margin: '24px auto' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 600 }}>{project.name}</h1>
-      <div style={{ margin: '8px 0' }}>
-        <button className="btn" onClick={() => {
-          if (!superOn) {
-            const pwd = prompt('Enter super-user password');
-            toggleSuper(pwd ?? undefined);
-          } else toggleSuper();
-        }}>{superOn ? 'Super: ON' : 'Super: OFF'}</button>
-      </div>
-      <div style={{ display: 'flex', gap: 8, margin: '12px 0' }}>
-        <input className="input" placeholder="Ticket title" value={title} onChange={(e) => setTitle(e.target.value)} />
-        <button className="btn" onClick={createTicket}>Add Ticket</button>
-      </div>
-      <ul>
-        {(project.tickets ?? []).map((t: any) => (
-          <li key={t.id} style={{ padding: 8, borderBottom: '1px solid #eee' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <span>{t.title}</span>
-              {superOn ? <span style={{ color: '#6b7280' }}>by {t.authorId ?? '—'}</span> : null}
+    <div>
+      {/* Header */}
+      <div className="header">
+        <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: '#1e293b' }}>
+                {project.name}
+              </h1>
+              <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: 14 }}>
+                Project Board • {(project.tickets ?? []).length} tickets
+              </p>
             </div>
-          </li>
-        ))}
-      </ul>
-      <div style={{ marginTop: 16 }}>
-        <Notifications projectId={projectId} />
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <button 
+                className={`btn ${superOn ? 'btn-success' : 'btn-secondary'}`}
+                onClick={() => {
+                  if (!superOn) {
+                    const pwd = prompt('Enter super-user password');
+                    toggleSuper(pwd ?? undefined);
+                  } else toggleSuper();
+                }}
+              >
+                {superOn ? '👁️ Super: ON' : '👁️ Super: OFF'}
+              </button>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => router.push('/projects')}
+              >
+                ← Back to Projects
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="container" style={{ paddingTop: 32, paddingBottom: 32 }}>
+        {/* Add Ticket Form */}
+        <div className="card" style={{ marginBottom: 32 }}>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16, color: '#1e293b' }}>
+            Add New Ticket
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <input 
+              className="input" 
+              placeholder="Enter ticket title" 
+              value={title} 
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && createTicket()}
+            />
+            <textarea 
+              className="input" 
+              placeholder="Enter ticket description (optional)"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              style={{ resize: 'vertical', minHeight: '80px' }}
+            />
+            <button className="btn btn-success" onClick={createTicket}>
+              Add Ticket
+            </button>
+          </div>
+        </div>
+
+        {/* Kanban Board */}
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="grid grid-3">
+            {/* TODO Column */}
+            <div className="kanban-column todo" id="TODO">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: '#64748b' }}>
+                  📋 To Do
+                </h3>
+                <span className="status-badge status-todo">
+                  {(project.tickets ?? []).filter(t => t.status === 'TODO').length}
+                </span>
+              </div>
+              <SortableContext items={(project.tickets ?? []).filter(t => t.status === 'TODO').map(t => t.id)} strategy={verticalListSortingStrategy}>
+                {(project.tickets ?? [])
+                  .filter(t => t.status === 'TODO')
+                  .map((t: Ticket) => (
+                    <DraggableTicket key={t.id} ticket={t} superOn={superOn} />
+                  ))}
+              </SortableContext>
+            </div>
+
+            {/* IN PROGRESS Column */}
+            <div className="kanban-column in-progress" id="IN_PROGRESS">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: '#92400e' }}>
+                  ⚡ In Progress
+                </h3>
+                <span className="status-badge status-in-progress">
+                  {(project.tickets ?? []).filter(t => t.status === 'IN_PROGRESS').length}
+                </span>
+              </div>
+              <SortableContext items={(project.tickets ?? []).filter(t => t.status === 'IN_PROGRESS').map(t => t.id)} strategy={verticalListSortingStrategy}>
+                {(project.tickets ?? [])
+                  .filter(t => t.status === 'IN_PROGRESS')
+                  .map((t: Ticket) => (
+                    <DraggableTicket key={t.id} ticket={t} superOn={superOn} />
+                  ))}
+              </SortableContext>
+            </div>
+
+            {/* DONE Column */}
+            <div className="kanban-column done" id="DONE">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: '#065f46' }}>
+                  ✅ Done
+                </h3>
+                <span className="status-badge status-done">
+                  {(project.tickets ?? []).filter(t => t.status === 'DONE').length}
+                </span>
+              </div>
+              <SortableContext items={(project.tickets ?? []).filter(t => t.status === 'DONE').map(t => t.id)} strategy={verticalListSortingStrategy}>
+                {(project.tickets ?? [])
+                  .filter(t => t.status === 'DONE')
+                  .map((t: Ticket) => (
+                    <DraggableTicket key={t.id} ticket={t} superOn={superOn} />
+                  ))}
+              </SortableContext>
+            </div>
+          </div>
+
+          <DragOverlay>
+            {activeId ? (
+              <div className="ticket-card" style={{ transform: 'rotate(5deg)', boxShadow: '0 8px 24px rgba(0,0,0,0.2)' }}>
+                <div style={{ marginBottom: 8 }}>
+                  <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 4px 0', color: '#1e293b' }}>
+                    {(project.tickets ?? []).find(t => t.id === activeId)?.title}
+                  </h4>
+                </div>
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+
+        {/* Activity Feed */}
+        <div style={{ marginTop: 32 }}>
+          <Notifications projectId={projectId} />
+        </div>
       </div>
     </div>
   );

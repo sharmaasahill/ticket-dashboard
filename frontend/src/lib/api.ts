@@ -1,8 +1,11 @@
 import axios from 'axios';
 
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000',
+  baseURL: process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001',
 });
+
+// Debug: Log the API base URL
+console.log('API Base URL:', api.defaults.baseURL);
 
 export function setAuthToken(token?: string) {
   if (token) api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
