@@ -5,6 +5,9 @@
   "author": "Sahil Sharma",
   "private": true,
   "license": "MIT",
+  "prisma": {
+    "schema": "server/prisma/schema.prisma"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
