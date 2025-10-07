@@ -40,7 +40,17 @@ interface Ticket {
 }
 
 // Draggable Ticket Component
-function DraggableTicket({ ticket, superOn }: { ticket: Ticket; superOn: boolean }) {
+function DraggableTicket({ 
+  ticket, 
+  superOn, 
+  onEdit, 
+  onDelete 
+}: { 
+  ticket: Ticket; 
+  superOn: boolean;
+  onEdit: (ticket: Ticket) => void;
+  onDelete: (ticket: Ticket) => void;
+}) {
   const {
     attributes,
     listeners,
@@ -59,23 +69,30 @@ function DraggableTicket({ ticket, superOn }: { ticket: Ticket; superOn: boolean
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={{ ...style, cursor: 'grab' }}
       {...attributes}
       {...listeners}
       className="ticket-card"
     >
       <div style={{ marginBottom: 8 }}>
-        <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 4px 0', color: '#1e293b' }}>
+        <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
           {ticket.title}
         </h4>
         {ticket.description && (
-          <p style={{ fontSize: 12, color: '#64748b', margin: 0 }}>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 8px 0', lineHeight: 1.4 }}>
             {ticket.description}
           </p>
         )}
       </div>
+      
       {superOn && (
-        <div style={{ fontSize: 11, color: '#94a3b8', borderTop: '1px solid #f1f5f9', paddingTop: 8 }}>
+        <div style={{ 
+          fontSize: 11, 
+          color: 'var(--text-muted)', 
+          borderTop: '1px solid var(--border)', 
+          paddingTop: 8,
+          marginTop: 8
+        }}>
           Created by: {ticket.authorId ?? 'System'}
         </div>
       )}
@@ -90,14 +107,18 @@ function DroppableColumn({
   icon, 
   tickets, 
   superOn, 
-  className 
+  className,
+  onEdit,
+  onDelete
 }: { 
   id: string; 
   title: string; 
   icon: string; 
   tickets: Ticket[]; 
   superOn: boolean; 
-  className: string; 
+  className: string;
+  onEdit: (ticket: Ticket) => void;
+  onDelete: (ticket: Ticket) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
@@ -106,13 +127,13 @@ function DroppableColumn({
       ref={setNodeRef}
       className={`kanban-column ${className}`}
       style={{
-        backgroundColor: isOver ? '#f0f9ff' : undefined,
-        borderColor: isOver ? '#3b82f6' : undefined,
+        backgroundColor: isOver ? 'var(--card-hover)' : undefined,
+        borderColor: isOver ? 'var(--primary)' : undefined,
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: '#64748b' }}>
-          {icon} {title}
+        <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: 'var(--text-secondary)' }}>
+          {title}
         </h3>
         <span className={`status-badge status-${className}`}>
           {tickets.length}
@@ -120,7 +141,13 @@ function DroppableColumn({
       </div>
       <SortableContext items={tickets.map(t => t.id)} strategy={verticalListSortingStrategy}>
         {tickets.map((ticket) => (
-          <DraggableTicket key={ticket.id} ticket={ticket} superOn={superOn} />
+          <DraggableTicket 
+            key={ticket.id} 
+            ticket={ticket} 
+            superOn={superOn} 
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
         ))}
       </SortableContext>
     </div>
@@ -137,6 +164,10 @@ export default function ProjectDetailPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [editingTicket, setEditingTicket] = useState<Ticket | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState<Ticket | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -183,6 +214,36 @@ export default function ProjectDetailPage() {
     }
   }, []);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'n':
+            e.preventDefault();
+            if (!showEditModal && !showDeleteModal) {
+              setTitle('');
+              setDescription('');
+              setEditingTicket(null);
+              setShowEditModal(true);
+            }
+            break;
+          case 'k':
+            e.preventDefault();
+            document.querySelector('input[placeholder="Search tickets..."]')?.focus();
+            break;
+          case 'Escape':
+            if (showEditModal) setShowEditModal(false);
+            if (showDeleteModal) setShowDeleteModal(null);
+            break;
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showEditModal, showDeleteModal]);
+
   async function createTicket() {
     if (!title) return;
     try {
@@ -192,6 +253,49 @@ export default function ProjectDetailPage() {
     } catch (error) {
       console.error('Failed to create ticket:', error);
     }
+  }
+
+  async function updateTicket() {
+    if (!editingTicket || !title) return;
+    try {
+      await api.patch(`/tickets/${editingTicket.id}`, { title, description });
+      setEditingTicket(null);
+      setTitle("");
+      setDescription("");
+      setShowEditModal(false);
+    } catch (error) {
+      console.error('Failed to update ticket:', error);
+    }
+  }
+
+  async function deleteTicket(ticketId: string) {
+    try {
+      await api.delete(`/tickets/${ticketId}`);
+      setShowDeleteModal(null);
+    } catch (error) {
+      console.error('Failed to delete ticket:', error);
+    }
+  }
+
+  function openEditModal(ticket: Ticket) {
+    setEditingTicket(ticket);
+    setTitle(ticket.title);
+    setDescription(ticket.description || '');
+    setShowEditModal(true);
+  }
+
+  function openDeleteModal(ticket: Ticket) {
+    setShowDeleteModal(ticket);
+  }
+
+  function filteredTickets(tickets: Ticket[], status: string) {
+    return tickets.filter(ticket => {
+      const matchesStatus = ticket.status === status;
+      const matchesSearch = !searchQuery || 
+        ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (ticket.description && ticket.description.toLowerCase().includes(searchQuery.toLowerCase()));
+      return matchesStatus && matchesSearch;
+    });
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -259,11 +363,32 @@ export default function ProjectDetailPage() {
 
       {/* Main Content */}
       <div className="container" style={{ paddingTop: 32, paddingBottom: 32 }}>
-        {/* Add Ticket Form */}
+        {/* Search and Add Ticket Form */}
         <div className="card" style={{ marginBottom: 32 }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16, color: '#1e293b' }}>
-            Add New Ticket
-          </h2>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+              Add New Ticket
+            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <input 
+                className="input" 
+                placeholder="Search tickets..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                style={{ width: '250px' }}
+              />
+              <div style={{ 
+                fontSize: '12px', 
+                color: 'var(--text-muted)', 
+                background: 'var(--card-hover)', 
+                padding: '4px 8px', 
+                borderRadius: '6px',
+                border: '1px solid var(--border)'
+              }}>
+                Ctrl+K to search
+              </div>
+            </div>
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <input 
               className="input" 
@@ -296,26 +421,32 @@ export default function ProjectDetailPage() {
             <DroppableColumn
               id="TODO"
               title="To Do"
-              icon="📋"
-              tickets={(project.tickets ?? []).filter(t => t.status === 'TODO')}
+              icon=""
+              tickets={filteredTickets(project.tickets ?? [], 'TODO')}
               superOn={superOn}
               className="todo"
+              onEdit={openEditModal}
+              onDelete={openDeleteModal}
             />
             <DroppableColumn
               id="IN_PROGRESS"
               title="In Progress"
-              icon="⚡"
-              tickets={(project.tickets ?? []).filter(t => t.status === 'IN_PROGRESS')}
+              icon=""
+              tickets={filteredTickets(project.tickets ?? [], 'IN_PROGRESS')}
               superOn={superOn}
               className="in-progress"
+              onEdit={openEditModal}
+              onDelete={openDeleteModal}
             />
             <DroppableColumn
               id="DONE"
               title="Done"
-              icon="✅"
-              tickets={(project.tickets ?? []).filter(t => t.status === 'DONE')}
+              icon=""
+              tickets={filteredTickets(project.tickets ?? [], 'DONE')}
               superOn={superOn}
               className="done"
+              onEdit={openEditModal}
+              onDelete={openDeleteModal}
             />
           </div>
 
@@ -337,6 +468,97 @@ export default function ProjectDetailPage() {
           <Notifications projectId={projectId} />
         </div>
       </div>
+
+      {/* Edit Ticket Modal */}
+      {showEditModal && editingTicket && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24, color: 'var(--text-primary)' }}>
+              Edit Ticket
+            </h2>
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ 
+                display: 'block', 
+                fontSize: 14, 
+                fontWeight: 500, 
+                color: 'var(--text-primary)', 
+                marginBottom: 8 
+              }}>
+                Ticket Title
+              </label>
+              <input 
+                className="input" 
+                placeholder="Enter ticket title" 
+                value={title} 
+                onChange={(e) => setTitle(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ 
+                display: 'block', 
+                fontSize: 14, 
+                fontWeight: 500, 
+                color: 'var(--text-primary)', 
+                marginBottom: 8 
+              }}>
+                Description (Optional)
+              </label>
+              <textarea 
+                className="input" 
+                placeholder="Enter ticket description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                style={{ resize: 'vertical', minHeight: '80px' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <button 
+                className="btn btn-ghost" 
+                onClick={() => setShowEditModal(false)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn" 
+                onClick={updateTicket}
+                disabled={!title.trim()}
+              >
+                Update Ticket
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Ticket Modal */}
+      {showDeleteModal && (
+        <div className="modal-overlay" onClick={() => setShowDeleteModal(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16, color: 'var(--text-primary)' }}>
+              Delete Ticket
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: 24, lineHeight: 1.5 }}>
+              Are you sure you want to delete "<strong>{showDeleteModal.title}</strong>"? This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <button 
+                className="btn btn-ghost" 
+                onClick={() => setShowDeleteModal(null)}
+              >
+                Cancel
+              </button>
+              <button 
+                className="btn btn-danger" 
+                onClick={() => deleteTicket(showDeleteModal.id)}
+              >
+                Delete Ticket
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

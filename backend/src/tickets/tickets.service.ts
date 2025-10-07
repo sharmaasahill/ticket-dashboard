@@ -63,6 +63,16 @@ export class TicketsService {
     await this.notifications.notifyProjectMembersIfOffline(ticket.projectId, `Ticket updated: ${ticket.title}`);
     return ticket;
   }
+
+  async delete(id: string) {
+    const ticket = await this.prisma.ticket.findUnique({ where: { id } });
+    if (!ticket) return null;
+
+    await this.prisma.ticket.delete({ where: { id } });
+    this.gateway.emitTicketUpdated(ticket.projectId, { type: 'deleted', ticket });
+    await this.activities.log({ projectId: ticket.projectId, ticketId: ticket.id, actorId: 'system', type: 'delete', message: `Ticket deleted: ${ticket.title}` });
+    return ticket;
+  }
 }
 
 

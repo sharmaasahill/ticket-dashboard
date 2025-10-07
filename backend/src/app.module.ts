@@ -8,10 +8,10 @@ import { AuthModule } from './auth/auth.module';
 import { MailModule } from './common/mail/mail.module';
 import { ProjectsModule } from './projects/projects.module';
 import { TicketsModule } from './tickets/tickets.module';
-import { AdminModule } from './admin/admin.module';
-import { NotificationsModule } from './notifications/notifications.module';
 import { ActivitiesModule } from './activities/activities.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -22,10 +22,10 @@ import { RealtimeModule } from './realtime/realtime.module';
     AuthModule,
     ProjectsModule,
     TicketsModule,
-    AdminModule,
-    NotificationsModule,
     ActivitiesModule,
     RealtimeModule,
+    NotificationsModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

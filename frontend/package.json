@@ -1,7 +1,10 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "ticket-dashboard-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Ticket Dashboard - A modern project management tool",
+  "author": "Sahil Sharma",
   "private": true,
+  "license": "MIT",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

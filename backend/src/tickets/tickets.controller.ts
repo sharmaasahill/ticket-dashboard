@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { IsOptional, IsString } from 'class-validator';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { TicketsService } from './tickets.service';
@@ -45,6 +45,11 @@ export class TicketsController {
   @Patch(':id')
   update(@Param('id') id: string, @Body() dto: UpdateTicketDto) {
     return this.tickets.update(id, { ...dto });
+  }
+
+  @Delete(':id')
+  delete(@Param('id') id: string) {
+    return this.tickets.delete(id);
   }
 }
 
