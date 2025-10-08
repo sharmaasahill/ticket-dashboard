@@ -33,6 +33,7 @@
     "@nestjs/platform-socket.io": "^11.1.6",
     "@nestjs/websockets": "^11.1.6",
     "@prisma/client": "^6.16.3",
+    "@sendgrid/mail": "^8.1.6",
     "@types/node": "^22.10.7",
     "@types/nodemailer": "^7.0.2",
     "@types/passport-jwt": "^4.0.1",

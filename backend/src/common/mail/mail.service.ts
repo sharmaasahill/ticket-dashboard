@@ -1,44 +1,50 @@
 import { Injectable } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import * as sgMail from '@sendgrid/mail';
 
 @Injectable()
 export class MailService {
-  private transporter: nodemailer.Transporter | null = null;
-
   constructor() {
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      this.transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT ? Number(process.env.SMTP_PORT) : 587,
-        secure: false,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
+    // Initialize SendGrid with API key
+    if (process.env.SENDGRID_API_KEY) {
+      sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     }
   }
 
   async sendOtp(email: string, code: string): Promise<void> {
-    // For now, just log the OTP instead of sending email
-    // This prevents SMTP connection timeouts on Render
-    console.log(`[MailService] OTP for ${email}: ${code}`);
-    console.log(`[MailService] In production, this would be sent via email`);
-    
-    // TODO: Configure proper SMTP service (SendGrid, Resend, etc.)
-    // if (!this.transporter) {
-    //   console.log(`[MailService] SMTP not configured. OTP for ${email}: ${code}`);
-    //   return;
-    // }
-    
-    // const from = process.env.MAIL_FROM ?? 'no-reply@ticket-dashboard';
-    // await this.transporter.sendMail({
-    //   from,
-    //   to: email,
-    //   subject: 'Your login code',
-    //   text: `Your OTP code is ${code}. It expires in 10 minutes.`,
-    // });
+    try {
+      if (!process.env.SENDGRID_API_KEY) {
+        console.log(`[MailService] SendGrid not configured. OTP for ${email}: ${code}`);
+        return;
+      }
+
+      const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'i.sahilkrsharma@gmail.com';
+      
+      const msg = {
+        to: email,
+        from: fromEmail,
+        subject: 'Your Ticket Dashboard Login Code',
+        text: `Your verification code is: ${code}\n\nThis code expires in 10 minutes.\n\nIf you didn't request this code, please ignore this email.`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #333;">Ticket Dashboard Login</h2>
+            <p>Your verification code is:</p>
+            <div style="background: #f4f4f4; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; margin: 20px 0; border-radius: 8px;">
+              ${code}
+            </div>
+            <p>This code expires in 10 minutes.</p>
+            <p>If you didn't request this code, please ignore this email.</p>
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+            <p style="color: #666; font-size: 12px;">Ticket Dashboard - Project Management Tool</p>
+          </div>
+        `,
+      };
+
+      await sgMail.send(msg);
+      console.log(`[MailService] OTP sent successfully to ${email}`);
+    } catch (error) {
+      console.error(`[MailService] Failed to send OTP to ${email}:`, error);
+      // Fallback to console log if SendGrid fails
+      console.log(`[MailService] Fallback - OTP for ${email}: ${code}`);
+    }
   }
 }
-
-
