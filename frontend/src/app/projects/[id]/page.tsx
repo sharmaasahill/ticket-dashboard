@@ -188,7 +188,8 @@ export default function ProjectDetailPage() {
     
       const socket = getSocket();
       joinProject(projectId, token ? 'user-' + Date.now() : undefined);
-    socket.on('ticket:updated', (payload: { type: string; ticket: Ticket }) => {
+      
+      socket.on('ticket:updated', (payload: { type: string; ticket: Ticket }) => {
       setProject((prev: Project | null) => {
         if (!prev) return prev;
         if (payload.type === 'created') {

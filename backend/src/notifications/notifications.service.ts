@@ -20,7 +20,7 @@ export class NotificationsService {
       });
 
       if (members.length === 0) {
-        console.log(`No members found for project ${projectId}`);
+        console.log(`No members found for project ${projectId} - skipping email notifications`);
         return;
       }
 
@@ -42,6 +42,8 @@ export class NotificationsService {
             this.sendOfflineNotification(member.user.email, message)
           )
         );
+      } else {
+        console.log(`All members are online for project ${projectId} - no email notifications needed`);
       }
     } catch (error) {
       console.error('Failed to send notifications:', error);

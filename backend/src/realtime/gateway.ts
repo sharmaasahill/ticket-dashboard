@@ -23,19 +23,25 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('join')
   handleJoin(@MessageBody() data: { projectId: string; userId?: string }, client: Socket) {
-    const room = `project:${data.projectId}`;
-    client.join(room);
-    
-    // Track user connection
-    if (data.userId) {
-      this.userSockets.set(client.id, data.userId);
-      if (!this.connectedUsers.has(data.projectId)) {
-        this.connectedUsers.set(data.projectId, new Set());
+    try {
+      const room = `project:${data.projectId}`;
+      client.join(room);
+      
+      // Track user connection
+      if (data.userId) {
+        this.userSockets.set(client.id, data.userId);
+        if (!this.connectedUsers.has(data.projectId)) {
+          this.connectedUsers.set(data.projectId, new Set());
+        }
+        this.connectedUsers.get(data.projectId)!.add(data.userId);
       }
-      this.connectedUsers.get(data.projectId)!.add(data.userId);
+      
+      console.log(`User joined room: ${room}, userId: ${data.userId}`);
+      return { ok: true, room };
+    } catch (error) {
+      console.error('Error in handleJoin:', error);
+      return { ok: false, error: error.message };
     }
-    
-    return { ok: true, room };
   }
 
   handleConnection(client: Socket) {

@@ -13,7 +13,15 @@ export function getSocket(): Socket {
 
 export function joinProject(projectId: string, userId?: string) {
   const socket = getSocket();
-  socket.emit('join', { projectId, userId });
+  
+  // Ensure socket is connected before joining
+  if (socket.connected) {
+    socket.emit('join', { projectId, userId });
+  } else {
+    socket.on('connect', () => {
+      socket.emit('join', { projectId, userId });
+    });
+  }
 }
 
 
