@@ -32,7 +32,7 @@ export default function Home() {
     setLoading(true);
     try {
       await verifyOtp(email, code);
-      // Use router.push for better navigation
+      // Force a page reload to ensure state is properly set
       if (typeof window !== "undefined") {
         window.location.href = "/projects";
       }

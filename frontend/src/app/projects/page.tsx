@@ -24,22 +24,35 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(false);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) {
+    // Check if we have a token in localStorage as fallback
+    const storedToken = localStorage.getItem('auth-storage');
+    let parsedToken = null;
+    
+    try {
+      if (storedToken) {
+        const parsed = JSON.parse(storedToken);
+        parsedToken = parsed.state?.token;
+      }
+    } catch (e) {
+      console.log('No stored auth found');
+    }
+
+    if (!token && !parsedToken) {
+      setAuthLoading(false);
       redirect("/");
       return;
     }
-    setAuthToken(token);
-    loadProjects();
-  }, [token, logout]);
-
-  // Initialize auth token on mount
-  useEffect(() => {
-    if (token) {
-      setAuthToken(token);
+    
+    const authToken = token || parsedToken;
+    if (authToken) {
+      setAuthToken(authToken);
+      loadProjects();
+      setAuthLoading(false);
     }
-  }, []);
+  }, [token, logout]);
 
   async function loadProjects() {
     try {
@@ -142,6 +155,31 @@ export default function ProjectsPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (authLoading) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        background: 'var(--background)'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            width: 40, 
+            height: 40, 
+            border: '3px solid var(--border)', 
+            borderTop: '3px solid var(--primary)', 
+            borderRadius: '50%', 
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }} />
+          <p style={{ color: 'var(--muted)', margin: 0 }}>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
