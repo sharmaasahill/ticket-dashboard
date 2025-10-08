@@ -11,4 +11,9 @@ export function getSocket(): Socket {
   return socket;
 }
 
+export function joinProject(projectId: string, userId?: string) {
+  const socket = getSocket();
+  socket.emit('join', { projectId, userId });
+}
+
 

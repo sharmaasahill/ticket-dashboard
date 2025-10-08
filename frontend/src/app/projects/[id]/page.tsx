@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { api, setAuthToken } from "@/lib/api";
-import { getSocket } from "@/lib/socket";
+import { getSocket, joinProject } from "@/lib/socket";
 import { useParams, useRouter } from "next/navigation";
 import { useUi } from "@/store/useUi";
 import { useAuth } from "@/store/useAuth";
@@ -186,8 +186,8 @@ export default function ProjectDetailPage() {
     
     api.get(`/projects/${projectId}`).then(r => setProject(r.data)).catch(() => logout());
     
-    const socket = getSocket();
-    socket.emit('join', { projectId });
+      const socket = getSocket();
+      joinProject(projectId, token ? 'user-' + Date.now() : undefined);
     socket.on('ticket:updated', (payload: { type: string; ticket: Ticket }) => {
       setProject((prev: Project | null) => {
         if (!prev) return prev;
