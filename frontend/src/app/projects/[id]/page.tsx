@@ -230,7 +230,7 @@ export default function ProjectDetailPage() {
             break;
           case 'k':
             e.preventDefault();
-            document.querySelector('input[placeholder="Search tickets..."]')?.focus();
+            (document.querySelector('input[placeholder="Search tickets..."]') as HTMLInputElement)?.focus();
             break;
           case 'Escape':
             if (showEditModal) setShowEditModal(false);
