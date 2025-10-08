@@ -540,7 +540,7 @@ export default function ProjectDetailPage() {
               Delete Ticket
             </h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: 24, lineHeight: 1.5 }}>
-              Are you sure you want to delete "<strong>{showDeleteModal.title}</strong>"? This action cannot be undone.
+                  Are you sure you want to delete &ldquo;<strong>{showDeleteModal.title}</strong>&rdquo;? This action cannot be undone.
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
               <button 

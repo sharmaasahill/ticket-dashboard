@@ -8,14 +8,19 @@ import { useRouter } from "next/navigation";
 
 export default function ProjectsPage() {
   const { token, logout, email } = useAuth();
-  const router = useRouter();
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<Array<{
+    id: string;
+    name: string;
+    description?: string;
+    createdAt: string;
+    tickets?: Array<unknown>;
+  }>>([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [editingProject, setEditingProject] = useState<any>(null);
+  const [editingProject, setEditingProject] = useState<{ id: string; name: string; description?: string } | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState<any>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState<{ id: string; name: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [showBulkActions, setShowBulkActions] = useState(false);
@@ -95,7 +100,7 @@ export default function ProjectsPage() {
     }
   }
 
-  function openEditModal(project: any) {
+  function openEditModal(project: { id: string; name: string; description?: string }) {
     setEditingProject(project);
     setName(project.name);
     setDescription(project.description || '');
@@ -171,10 +176,10 @@ export default function ProjectsPage() {
           </div>
           
           <nav>
-            <a href="/projects" className="sidebar-item active">
+              <Link href="/projects" className="sidebar-item active">
               <span style={{ marginRight: 12, fontSize: '16px' }}>■</span>
               Projects
-            </a>
+            </Link>
           </nav>
         </div>
         
@@ -515,7 +520,7 @@ export default function ProjectsPage() {
               Delete Project
             </h2>
             <p style={{ color: 'var(--muted)', marginBottom: 24, lineHeight: 1.5 }}>
-              Are you sure you want to delete "<strong>{showDeleteModal.name}</strong>"? This action cannot be undone and will permanently delete all tickets and data associated with this project.
+                  Are you sure you want to delete &ldquo;<strong>{showDeleteModal.name}</strong>&rdquo;? This action cannot be undone and will permanently delete all tickets and data associated with this project.
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
               <button 
