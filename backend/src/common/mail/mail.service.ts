@@ -20,18 +20,24 @@ export class MailService {
   }
 
   async sendOtp(email: string, code: string): Promise<void> {
-    if (!this.transporter) {
-      console.log(`[MailService] SMTP not configured. OTP for ${email}: ${code}`);
-      return;
-    }
+    // For now, just log the OTP instead of sending email
+    // This prevents SMTP connection timeouts on Render
+    console.log(`[MailService] OTP for ${email}: ${code}`);
+    console.log(`[MailService] In production, this would be sent via email`);
     
-    const from = process.env.MAIL_FROM ?? 'no-reply@ticket-dashboard';
-    await this.transporter.sendMail({
-      from,
-      to: email,
-      subject: 'Your login code',
-      text: `Your OTP code is ${code}. It expires in 10 minutes.`,
-    });
+    // TODO: Configure proper SMTP service (SendGrid, Resend, etc.)
+    // if (!this.transporter) {
+    //   console.log(`[MailService] SMTP not configured. OTP for ${email}: ${code}`);
+    //   return;
+    // }
+    
+    // const from = process.env.MAIL_FROM ?? 'no-reply@ticket-dashboard';
+    // await this.transporter.sendMail({
+    //   from,
+    //   to: email,
+    //   subject: 'Your login code',
+    //   text: `Your OTP code is ${code}. It expires in 10 minutes.`,
+    // });
   }
 }
 
