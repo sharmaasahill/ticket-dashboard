@@ -34,7 +34,13 @@ export class ProjectsService {
   getById(id: string) {
     return this.prisma.project.findUnique({
       where: { id },
-      include: { tickets: true },
+      include: { 
+        tickets: {
+          include: {
+            author: true
+          }
+        }
+      },
     });
   }
 
@@ -45,7 +51,13 @@ export class ProjectsService {
         name: input.name,
         description: input.description
       },
-      include: { tickets: true }
+      include: { 
+        tickets: {
+          include: {
+            author: true
+          }
+        }
+      }
     });
   }
 

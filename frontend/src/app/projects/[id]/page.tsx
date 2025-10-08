@@ -85,17 +85,17 @@ function DraggableTicket({
         )}
       </div>
       
-      {superOn && (
-        <div style={{ 
-          fontSize: 11, 
-          color: 'var(--text-muted)', 
-          borderTop: '1px solid var(--border)', 
-          paddingTop: 8,
-          marginTop: 8
-        }}>
-          Created by: {ticket.authorId ?? 'System'}
-        </div>
-      )}
+          {superOn && (
+            <div style={{ 
+              fontSize: 11, 
+              color: 'var(--text-muted)', 
+              borderTop: '1px solid var(--border)', 
+              paddingTop: 8,
+              marginTop: 8
+            }}>
+              Created by: {ticket.author?.email ?? 'System'}
+            </div>
+          )}
     </div>
   );
 }
@@ -190,7 +190,8 @@ export default function ProjectDetailPage() {
       joinProject(projectId, token ? 'user-' + Date.now() : undefined);
       
       socket.on('ticket:updated', (payload: { type: string; ticket: Ticket }) => {
-      setProject((prev: Project | null) => {
+        console.log('Received ticket update:', payload);
+        setProject((prev: Project | null) => {
         if (!prev) return prev;
         if (payload.type === 'created') {
           return { ...prev, tickets: [payload.ticket, ...(prev.tickets ?? [])] };
@@ -203,8 +204,15 @@ export default function ProjectDetailPage() {
         return prev;
       });
     });
+    // Reconnect handling
+    socket.on('reconnect', () => {
+      console.log('Socket reconnected, rejoining project');
+      joinProject(projectId, token ? 'user-' + Date.now() : undefined);
+    });
+    
     return () => {
       socket.off('ticket:updated');
+      socket.off('reconnect');
     };
   }, [projectId, token, logout, router]);
 
