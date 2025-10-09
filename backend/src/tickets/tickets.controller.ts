@@ -12,6 +12,9 @@ class CreateTicketDto {
   @IsOptional()
   @IsString()
   description?: string;
+  @IsOptional()
+  @IsString()
+  authorEmail?: string;
 }
 
 class UpdateTicketDto {
