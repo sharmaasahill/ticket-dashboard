@@ -73,33 +73,128 @@ function DraggableTicket({
   return (
     <div
       ref={setNodeRef}
-      style={{ ...style, cursor: 'grab' }}
+      style={{ 
+        ...style, 
+        cursor: 'grab',
+        background: '#ffffff',
+        borderRadius: '6px',
+        padding: '12px',
+        marginBottom: '8px',
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        borderColor: '#d1d5db',
+        transition: 'border-color 0.2s',
+        position: 'relative'
+      }}
       {...attributes}
       {...listeners}
       className="ticket-card"
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = '#10a37f';
+      }}
+      onMouseLeave={(e) => {
+        if (!isDragging) {
+          e.currentTarget.style.borderColor = '#e5e7eb';
+        }
+      }}
     >
-      <div style={{ marginBottom: 8 }}>
-        <h4 style={{ fontSize: 14, fontWeight: 600, margin: '0 0 4px 0', color: 'var(--text-primary)' }}>
+      {/* Ticket Actions */}
+      <div style={{
+        position: 'absolute',
+        top: '8px',
+        right: '8px',
+        display: 'flex',
+        gap: '4px',
+        opacity: 0,
+        transition: 'opacity 0.2s'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.opacity = '1';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.opacity = '0';
+      }}
+      >
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(ticket);
+          }}
+          style={{
+            width: '20px',
+            height: '20px',
+            borderRadius: '4px',
+            border: 'none',
+            background: '#f3f4f6',
+            color: '#6b7280',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '10px'
+          }}
+        >
+          ✏️
+        </button>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(ticket);
+          }}
+          style={{
+            width: '20px',
+            height: '20px',
+            borderRadius: '4px',
+            border: 'none',
+            background: '#fef2f2',
+            color: '#ef4444',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '10px'
+          }}
+        >
+          🗑️
+        </button>
+      </div>
+
+      <div style={{ marginBottom: '8px', paddingRight: '50px' }}>
+        <h4 style={{ 
+          fontSize: '14px', 
+          fontWeight: '600', 
+          margin: '0 0 4px 0', 
+          color: '#202123',
+          lineHeight: 1.4
+        }}>
           {ticket.title}
         </h4>
         {ticket.description && (
-          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: '0 0 8px 0', lineHeight: 1.4 }}>
+          <p style={{ 
+            fontSize: '12px', 
+            color: '#6e6e80', 
+            margin: '0 0 8px 0', 
+            lineHeight: 1.4
+          }}>
             {ticket.description}
           </p>
         )}
       </div>
       
-          {superOn && (
-            <div style={{ 
-              fontSize: 11, 
-              color: 'var(--text-muted)', 
-              borderTop: '1px solid var(--border)', 
-              paddingTop: 8,
-              marginTop: 8
-            }}>
-              Created by: {ticket.author?.email ?? 'System'}
-            </div>
-          )}
+      {superOn && (
+        <div style={{ 
+          fontSize: '11px', 
+          color: '#9ca3af', 
+          borderTop: '1px solid #d1d5db', 
+          paddingTop: '8px',
+          marginTop: '8px',
+          background: '#f9fafb',
+          padding: '4px 8px',
+          borderRadius: '4px'
+        }}>
+          Created by: {ticket.author?.email ?? 'System'}
+        </div>
+      )}
     </div>
   );
 }
@@ -126,20 +221,48 @@ function DroppableColumn({
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
+  const getColumnStyle = () => {
+    const baseStyle = {
+      background: '#ffffff',
+      borderRadius: '8px',
+      padding: '16px',
+      minHeight: '400px',
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      borderColor: '#d1d5db'
+    };
+
+    if (isOver) {
+      return {
+        ...baseStyle,
+        borderColor: '#10a37f',
+        background: '#f0fdf4'
+      };
+    }
+
+    return baseStyle;
+  };
+
   return (
     <div 
       ref={setNodeRef}
       className={`kanban-column ${className}`}
-      style={{
-        backgroundColor: isOver ? 'var(--card-hover)' : undefined,
-        borderColor: isOver ? 'var(--primary)' : undefined,
-      }}
+      style={getColumnStyle()}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 600, margin: 0, color: 'var(--text-secondary)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: '600', margin: 0, color: '#202123' }}>
           {title}
         </h3>
-        <span className={`status-badge status-${className}`}>
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '2px 8px',
+          borderRadius: '12px',
+          fontSize: '12px',
+          fontWeight: '500',
+          background: '#f3f4f6',
+          color: '#6b7280'
+        }}>
           {tickets.length}
         </span>
       </div>
@@ -346,36 +469,58 @@ export default function ProjectDetailPage() {
   if (!project) return <div style={{ padding: 24 }}>Loading...</div>;
 
   return (
-    <div>
+     <div style={{ background: '#ffffff', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
       {/* Header */}
-      <div className="header">
+      <div className="header" style={{
+        background: '#ffffff',
+        borderBottom: '1px solid #d1d5db',
+        padding: '20px 0'
+      }}>
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0, color: '#1e293b' }}>
+              <h1 style={{ fontSize: '20px', fontWeight: '600', margin: 0, color: '#202123' }}>
                 {project.name}
               </h1>
-              <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: 14 }}>
-                Project Board • {(project.tickets ?? []).length} tickets
+              <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: '14px' }}>
+                {(project.tickets ?? []).length} tickets
               </p>
             </div>
-            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <button 
-                className={`btn ${superOn ? 'btn-success' : 'btn-secondary'}`}
                 onClick={() => {
                   if (!superOn) {
                     const pwd = prompt('Enter super-user password');
                     toggleSuper(pwd ?? undefined);
                   } else toggleSuper();
                 }}
+                style={{
+                  background: superOn ? '#10a37f' : '#f3f4f6',
+                  color: superOn ? 'white' : '#6b7280',
+                  border: 'none',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  fontWeight: '500',
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
               >
-                {superOn ? '👁️ Super: ON' : '👁️ Super: OFF'}
+                {superOn ? 'Super: ON' : 'Super: OFF'}
               </button>
               <button 
-                className="btn btn-secondary" 
                 onClick={() => router.push('/projects')}
+                style={{
+                  background: 'transparent',
+                  color: '#6b7280',
+                  border: '1px solid #d1d5db',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  fontWeight: '500',
+                  fontSize: '14px',
+                  cursor: 'pointer'
+                }}
               >
-                ← Back to Projects
+                ← Back
               </button>
             </div>
           </div>
@@ -383,50 +528,81 @@ export default function ProjectDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="container" style={{ paddingTop: 32, paddingBottom: 32 }}>
+      <div className="container" style={{ paddingTop: '24px', paddingBottom: '24px' }}>
         {/* Search and Add Ticket Form */}
-        <div className="card" style={{ marginBottom: 32 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+        <div style={{ 
+          marginBottom: '24px',
+          background: '#ffffff',
+          border: '1px solid #d1d5db',
+          borderRadius: '8px',
+          padding: '20px'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#202123' }}>
               Add New Ticket
             </h2>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <input 
                 className="input" 
                 placeholder="Search tickets..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: '250px' }}
+                style={{ 
+                  width: '200px',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  border: '1px solid #d1d5db',
+                  background: '#ffffff',
+                  fontSize: '14px'
+                }}
               />
-              <div style={{ 
-                fontSize: '12px', 
-                color: 'var(--text-muted)', 
-                background: 'var(--card-hover)', 
-                padding: '4px 8px', 
-                borderRadius: '6px',
-                border: '1px solid var(--border)'
-              }}>
-                Ctrl+K to search
-              </div>
             </div>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <input 
               className="input" 
               placeholder="Enter ticket title" 
               value={title} 
               onChange={(e) => setTitle(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && createTicket()}
+              style={{
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #d1d5db',
+                background: '#ffffff',
+                fontSize: '14px'
+              }}
             />
             <textarea 
               className="input" 
               placeholder="Enter ticket description (optional)"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              style={{ resize: 'vertical', minHeight: '80px' }}
+              rows={2}
+              style={{ 
+                resize: 'vertical', 
+                minHeight: '60px',
+                padding: '10px 12px',
+                borderRadius: '6px',
+                border: '1px solid #d1d5db',
+                background: '#ffffff',
+                fontSize: '14px'
+              }}
             />
-            <button className="btn btn-success" onClick={createTicket}>
+            <button 
+              onClick={createTicket}
+              style={{
+                background: '#10a37f',
+                border: 'none',
+                padding: '10px 16px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontWeight: '500',
+                color: 'white',
+                cursor: 'pointer',
+                alignSelf: 'flex-start'
+              }}
+            >
               Add Ticket
             </button>
           </div>
@@ -438,11 +614,11 @@ export default function ProjectDetailPage() {
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <div className="grid grid-3">
+          <div className="grid grid-3" style={{ gap: '24px' }}>
             <DroppableColumn
               id="TODO"
               title="To Do"
-              icon=""
+              icon="📋"
               tickets={filteredTickets(project.tickets ?? [], 'TODO')}
               superOn={superOn}
               className="todo"
@@ -452,7 +628,7 @@ export default function ProjectDetailPage() {
             <DroppableColumn
               id="IN_PROGRESS"
               title="In Progress"
-              icon=""
+              icon="⚡"
               tickets={filteredTickets(project.tickets ?? [], 'IN_PROGRESS')}
               superOn={superOn}
               className="in-progress"
@@ -462,7 +638,7 @@ export default function ProjectDetailPage() {
             <DroppableColumn
               id="DONE"
               title="Done"
-              icon=""
+              icon="✅"
               tickets={filteredTickets(project.tickets ?? [], 'DONE')}
               superOn={superOn}
               className="done"

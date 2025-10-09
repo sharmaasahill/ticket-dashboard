@@ -49,175 +49,167 @@ export default function Home() {
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center',
-      background: 'var(--background)',
-      position: 'relative',
-      overflow: 'hidden'
+      background: '#ffffff',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
     }}>
-      {/* Background Pattern */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: `
-          radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
-          radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
-          radial-gradient(circle at 40% 40%, rgba(16, 185, 129, 0.05) 0%, transparent 50%)
-        `,
-        zIndex: 0
-      }} />
-      
-      <div className="card" style={{ 
-        maxWidth: 420, 
+      <div style={{ 
+        maxWidth: 400, 
         width: '100%', 
         margin: '20px',
-        position: 'relative',
-        zIndex: 1,
-        border: '1px solid var(--border)',
-        background: 'var(--card)'
+        background: '#ffffff',
+        borderRadius: '8px',
+        border: '1px solid #d1d5db',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
       }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ 
-            width: 64, 
-            height: 64, 
-            background: 'var(--primary)', 
-            borderRadius: '16px', 
-            margin: '0 auto 16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '24px',
-            color: 'white',
-            fontWeight: 'bold'
-          }}>
-            TD
+        <div style={{ padding: '40px' }}>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <div style={{ 
+              width: '48px', 
+              height: '48px', 
+              background: '#10a37f', 
+              borderRadius: '8px', 
+              margin: '0 auto 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '20px',
+              color: 'white',
+              fontWeight: '600'
+            }}>
+              TD
+            </div>
+            <h1 style={{ fontSize: '24px', fontWeight: '600', marginBottom: '8px', color: '#202123' }}>
+              Welcome back
+            </h1>
+            <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>
+              {!sent ? 'Sign in to your account' : 'Enter verification code'}
+            </p>
           </div>
-          <h1 style={{ fontSize: 32, fontWeight: 700, marginBottom: 8, color: 'var(--foreground)' }}>
-            Welcome to Ticket Dashboard
-          </h1>
-          <p style={{ color: 'var(--muted)', fontSize: 16, margin: 0 }}>
-            {!sent ? 'Enter your email to get started' : 'Enter the verification code'}
-          </p>
-        </div>
 
         {!sent ? (
           <form onSubmit={onIssue}>
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ 
-                display: 'block', 
-                fontSize: 14, 
-                fontWeight: 500, 
-                color: 'var(--foreground)', 
-                marginBottom: 8 
-              }}>
-                Email Address
-              </label>
-              <input 
-                className="input" 
-                placeholder="you@company.com" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)}
-                type="email"
-                required
-                style={{ fontSize: 16 }}
-              />
+            <div style={{ marginBottom: '24px' }}>
+               <label style={{ 
+                 display: 'block', 
+                 fontSize: '14px', 
+                 fontWeight: '500', 
+                 color: '#374151', 
+                 marginBottom: '8px' 
+               }}>
+                 Email
+               </label>
+               <input 
+                 className="input" 
+                 placeholder="Enter your email" 
+                 value={email} 
+                 onChange={(e) => setEmail(e.target.value)}
+                 type="email"
+                 required
+                 style={{ 
+                   width: '100%',
+                   fontSize: '16px', 
+                   padding: '12px 16px',
+                   borderRadius: '6px',
+                   border: '1px solid #d1d5db',
+                   background: '#ffffff',
+                   transition: 'border-color 0.2s'
+                 }}
+               />
             </div>
             <button 
               className="btn" 
               type="submit" 
               disabled={loading}
-              style={{ width: '100%', fontSize: 16, padding: '14px 20px' }}
+              style={{ 
+                width: '100%', 
+                fontSize: '16px', 
+                padding: '12px 16px',
+                borderRadius: '6px',
+                background: '#10a37f',
+                border: 'none',
+                fontWeight: '500',
+                color: 'white',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.7 : 1
+              }}
             >
-              {loading ? (
-                <>
-                  <div style={{ 
-                    width: 16, 
-                    height: 16, 
-                    border: '2px solid transparent', 
-                    borderTop: '2px solid currentColor', 
-                    borderRadius: '50%', 
-                    animation: 'spin 1s linear infinite',
-                    marginRight: 8
-                  }} />
-                  Sending...
-                </>
-              ) : (
-                'Send Verification Code'
-              )}
+              {loading ? 'Sending...' : 'Continue'}
             </button>
           </form>
         ) : (
           <form onSubmit={onVerify}>
-            <div style={{ marginBottom: 24 }}>
+            <div style={{ marginBottom: '24px' }}>
               <label style={{ 
                 display: 'block', 
-                fontSize: 14, 
-                fontWeight: 500, 
-                color: 'var(--foreground)', 
-                marginBottom: 8 
+                fontSize: '14px', 
+                fontWeight: '500', 
+                color: '#374151', 
+                marginBottom: '8px' 
               }}>
                 Verification Code
               </label>
               <input 
                 className="input" 
-                placeholder="123456" 
+                placeholder="Enter 6-digit code" 
                 value={code} 
                 onChange={(e) => setCode(e.target.value)}
                 maxLength={6}
                 required
-                style={{ fontSize: 16, textAlign: 'center', letterSpacing: '4px' }}
+                 style={{ 
+                   width: '100%',
+                   fontSize: '16px', 
+                   textAlign: 'center', 
+                   letterSpacing: '4px',
+                   padding: '12px 16px',
+                   borderRadius: '6px',
+                   border: '1px solid #d1d5db',
+                   background: '#ffffff',
+                   transition: 'border-color 0.2s'
+                 }}
               />
             </div>
-            <button 
-              className="btn" 
-              type="submit" 
-              disabled={loading}
-              style={{ width: '100%', fontSize: 16, padding: '14px 20px' }}
-            >
-              {loading ? (
-                <>
-                  <div style={{ 
-                    width: 16, 
-                    height: 16, 
-                    border: '2px solid transparent', 
-                    borderTop: '2px solid currentColor', 
-                    borderRadius: '50%', 
-                    animation: 'spin 1s linear infinite',
-                    marginRight: 8
-                  }} />
-                  Verifying...
-                </>
-              ) : (
-                'Verify & Continue'
-              )}
-            </button>
+              <button 
+                className="btn" 
+                type="submit" 
+                disabled={loading}
+                style={{ 
+                  width: '100%', 
+                  fontSize: '16px', 
+                  padding: '12px 16px',
+                  borderRadius: '6px',
+                  background: '#10a37f',
+                  border: 'none',
+                  fontWeight: '500',
+                  color: 'white',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  opacity: loading ? 0.7 : 1
+                }}
+              >
+                {loading ? 'Verifying...' : 'Verify'}
+              </button>
             <button 
               type="button"
-              className="btn btn-ghost" 
               onClick={() => setSent(false)}
-              style={{ width: '100%', marginTop: 12 }}
+              style={{ 
+                width: '100%', 
+                marginTop: '12px',
+                padding: '12px 16px',
+                borderRadius: '6px',
+                background: 'transparent',
+                border: '1px solid #d1d5db',
+                color: '#6b7280',
+                fontWeight: '500',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
             >
-              ← Back to Email
+              Back
             </button>
           </form>
         )}
 
-        <div style={{ marginTop: 32, textAlign: 'center' }}>
-          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
-            {!sent ? 
-              'We\'ll send you a secure verification code' : 
-              'Check your email for the 6-digit code'
-            }
-          </p>
         </div>
       </div>
-      
-      <style jsx>{`
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }

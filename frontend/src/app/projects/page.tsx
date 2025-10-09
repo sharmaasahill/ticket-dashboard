@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { api, setAuthToken } from "@/lib/api";
 import { useAuth } from "@/store/useAuth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { useRouter } from "next/navigation";
+// import { useRouter } from "next/navigation";
 
 export default function ProjectsPage() {
   const { token, logout, email } = useAuth();
@@ -23,8 +23,18 @@ export default function ProjectsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState<{ id: string; name: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
-  const [showBulkActions, setShowBulkActions] = useState(false);
+  // const [showBulkActions, setShowBulkActions] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+
+  const loadProjects = useCallback(async () => {
+    try {
+      const { data } = await api.get('/projects');
+      setItems(data);
+    } catch (error) {
+      console.error('Failed to load projects:', error);
+      logout();
+    }
+  }, [logout]);
 
   useEffect(() => {
     // Check if we have a token in localStorage as fallback
@@ -36,7 +46,7 @@ export default function ProjectsPage() {
         const parsed = JSON.parse(storedToken);
         parsedToken = parsed.state?.token;
       }
-    } catch (e) {
+    } catch {
       console.log('No stored auth found');
     }
 
@@ -52,17 +62,7 @@ export default function ProjectsPage() {
       loadProjects();
       setAuthLoading(false);
     }
-  }, [token, logout]);
-
-  async function loadProjects() {
-    try {
-      const { data } = await api.get('/projects');
-      setItems(data);
-    } catch (error) {
-      console.error('Failed to load projects:', error);
-      logout();
-    }
-  }
+  }, [token, logout, loadProjects]);
 
   async function createProject() {
     if (!name.trim()) return;
@@ -134,9 +134,9 @@ export default function ProjectsPage() {
     );
   }
 
-  function selectAllProjects() {
-    setSelectedProjects(items.map(p => p.id));
-  }
+  // function selectAllProjects() {
+  //   setSelectedProjects(items.map(p => p.id));
+  // }
 
   function clearSelection() {
     setSelectedProjects([]);
@@ -149,7 +149,7 @@ export default function ProjectsPage() {
       await Promise.all(selectedProjects.map(id => api.delete(`/projects/${id}`)));
       setItems(items.filter(p => !selectedProjects.includes(p.id)));
       setSelectedProjects([]);
-      setShowBulkActions(false);
+      // setShowBulkActions(false);
     } catch (error) {
       console.error('Failed to delete projects:', error);
     } finally {
@@ -183,39 +183,43 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--background)' }}>
+     <div style={{ minHeight: '100vh', background: '#ffffff', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
       {/* Sidebar */}
-      <div className="sidebar">
-        <div style={{ padding: '24px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 32 }}>
+        <div className="sidebar" style={{
+          background: '#f7f7f8',
+          borderRight: '1px solid #d1d5db',
+          width: '280px'
+        }}>
+        <div style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px' }}>
             <div style={{ 
-              width: 40, 
-              height: 40, 
-              background: 'var(--primary)', 
-              borderRadius: '10px', 
+              width: '40px', 
+              height: '40px', 
+              background: '#10a37f', 
+              borderRadius: '8px', 
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginRight: 12,
+              marginRight: '12px',
               fontSize: '18px',
               color: 'white',
-              fontWeight: 'bold'
+              fontWeight: '600'
             }}>
               TD
             </div>
             <div>
-              <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--foreground)' }}>
+              <h1 style={{ fontSize: '18px', fontWeight: '600', margin: 0, color: '#202123' }}>
                 Ticket Dashboard
               </h1>
-              <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>
-                Project Management
-              </p>
             </div>
           </div>
           
           <nav>
-              <Link href="/projects" className="sidebar-item active">
-              <span style={{ marginRight: 12, fontSize: '16px' }}>■</span>
+            <Link href="/projects" className="sidebar-item active" style={{
+              background: '#10a37f',
+              color: '#ffffff',
+              border: 'none'
+            }}>
               Projects
             </Link>
           </nav>
@@ -226,38 +230,46 @@ export default function ProjectsPage() {
           bottom: 0, 
           left: 0, 
           right: 0, 
-          padding: '20px',
-          borderTop: '1px solid var(--border)'
+          padding: '24px',
+          borderTop: '1px solid #d1d5db'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
             <div style={{ 
-              width: 32, 
-              height: 32, 
-              background: 'var(--accent)', 
+              width: '32px', 
+              height: '32px', 
+              background: '#10a37f', 
               borderRadius: '50%', 
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginRight: 12,
-              fontSize: '14px'
+              marginRight: '12px',
+              fontSize: '14px',
+              color: 'white',
+              fontWeight: '600'
             }}>
               {email?.charAt(0).toUpperCase()}
             </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--foreground)' }}>
+              <div style={{ fontSize: '14px', fontWeight: '500', color: '#202123' }}>
                 {email}
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--muted)' }}>
-                Online
               </div>
             </div>
           </div>
           <button 
-            className="btn btn-ghost" 
             onClick={() => logout()}
-            style={{ width: '100%', justifyContent: 'flex-start' }}
+            style={{ 
+              width: '100%', 
+              padding: '8px 12px',
+              borderRadius: '6px',
+              background: 'transparent',
+              border: '1px solid #d1d5db',
+              color: '#6b7280',
+              fontWeight: '500',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }}
           >
-            Logout
+            Sign out
           </button>
         </div>
       </div>
@@ -265,130 +277,204 @@ export default function ProjectsPage() {
       {/* Main Content */}
       <div className="main-content">
         {/* Header */}
-        <div className="header">
+         <div className="header" style={{
+           background: '#ffffff',
+           borderBottom: '1px solid #d1d5db',
+           padding: '24px 0'
+         }}>
           <div className="container">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0, color: 'var(--foreground)' }}>
+                <h1 style={{ fontSize: '24px', fontWeight: '600', margin: 0, color: '#202123' }}>
                   Projects
                 </h1>
-                <p style={{ margin: '4px 0 0 0', color: 'var(--muted)', fontSize: 16 }}>
+                <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: '14px' }}>
                   Manage your project boards and tickets
                 </p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 {selectedProjects.length > 0 && (
                   <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
-                    gap: 8, 
-                    background: 'var(--card-hover)', 
+                    gap: '8px', 
+                    background: '#f3f4f6', 
                     padding: '8px 12px', 
-                    borderRadius: '8px',
-                    border: '1px solid var(--border)'
+                    borderRadius: '6px',
+                    border: '1px solid #d1d5db'
                   }}>
-                    <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>
+                    <span style={{ fontSize: '14px', color: '#6b7280', fontWeight: '500' }}>
                       {selectedProjects.length} selected
                     </span>
-                    <button 
-                      className="btn btn-ghost" 
-                      onClick={clearSelection}
-                      style={{ padding: '4px 8px', fontSize: '12px' }}
-                    >
-                      Clear
-                    </button>
-                    <button 
-                      className="btn btn-danger" 
-                      onClick={bulkDeleteProjects}
-                      style={{ padding: '4px 8px', fontSize: '12px' }}
-                    >
-                      Delete All
-                    </button>
+                        <button 
+                          onClick={clearSelection}
+                          style={{ 
+                            padding: '4px 8px', 
+                            fontSize: '12px',
+                            background: 'transparent',
+                            color: '#6b7280',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Clear
+                        </button>
+                        <button 
+                          onClick={bulkDeleteProjects}
+                          style={{ 
+                            padding: '4px 8px', 
+                            fontSize: '12px',
+                            borderRadius: '4px',
+                            background: '#ef4444',
+                            border: 'none',
+                            color: 'white',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Delete
+                        </button>
                   </div>
                 )}
-              <button 
-                className="btn" 
-                onClick={openCreateModal}
-                style={{ display: 'flex', alignItems: 'center' }}
-              >
-                New Project
-              </button>
+                <button 
+                  onClick={openCreateModal}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    background: '#10a37f',
+                    border: 'none',
+                    padding: '10px 16px',
+                    borderRadius: '6px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: 'white',
+                    cursor: 'pointer'
+                  }}
+                >
+                  New Project
+                </button>
               </div>
             </div>
           </div>
         </div>
 
         {/* Main Content */}
-        <div className="container" style={{ paddingTop: 32, paddingBottom: 32 }}>
+        <div className="container" style={{ paddingTop: '32px', paddingBottom: '32px' }}>
           {items.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', padding: 64 }}>
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '60px 40px',
+              background: '#ffffff',
+              borderRadius: '8px',
+              border: '1px solid #e5e7eb'
+            }}>
               <div style={{ 
-                width: 80, 
-                height: 80, 
-                background: 'var(--card-hover)', 
-                borderRadius: '20px', 
+                width: '64px', 
+                height: '64px', 
+                background: '#f3f4f6', 
+                borderRadius: '12px', 
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto 24px',
-                fontSize: '32px',
-                color: 'var(--text-muted)',
-                fontWeight: 'bold'
+                fontSize: '24px'
               }}>
-                TD
+                📋
               </div>
-              <h3 style={{ fontSize: 24, fontWeight: 600, marginBottom: 12, color: 'var(--foreground)' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px', color: '#202123' }}>
                 No projects yet
               </h3>
-              <p style={{ color: 'var(--muted)', marginBottom: 32, fontSize: 16 }}>
-                Create your first project to start managing tickets and collaborating with your team
+              <p style={{ color: '#6e6e80', marginBottom: '24px', fontSize: '14px' }}>
+                Create your first project to start managing tickets
               </p>
-              <button className="btn" onClick={openCreateModal}>
-                Create Your First Project
+              <button 
+                onClick={openCreateModal}
+                style={{
+                  background: '#10a37f',
+                  border: 'none',
+                  padding: '10px 20px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: 'white',
+                  cursor: 'pointer'
+                }}
+              >
+                Create Project
               </button>
             </div>
           ) : (
-            <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
-              {items.map(project => (
-                <div key={project.id} className="card card-interactive" style={{ position: 'relative' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flex: 1 }}>
+            <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px' }}>
+                  {items.map(project => (
+                    <div key={project.id} style={{ 
+                      background: '#ffffff',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '8px',
+                      padding: '20px',
+                      transition: 'border-color 0.2s'
+                    }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', flex: 1 }}>
                       <input 
                         type="checkbox" 
                         checked={selectedProjects.includes(project.id)}
                         onChange={() => toggleProjectSelection(project.id)}
-                        style={{ marginTop: 4 }}
+                        style={{ marginTop: '2px' }}
                       />
                       <div style={{ flex: 1 }}>
-                        <h3 style={{ fontSize: 20, fontWeight: 600, margin: '0 0 8px 0', color: 'var(--foreground)' }}>
-                          {project.name}
-                        </h3>
-                        {project.description && (
-                          <p style={{ color: 'var(--muted)', fontSize: 14, margin: '0 0 16px 0', lineHeight: 1.5 }}>
-                            {project.description}
-                          </p>
-                        )}
+                            <h3 style={{ 
+                              fontSize: '16px', 
+                              fontWeight: '600', 
+                              margin: '0 0 8px 0', 
+                              color: '#202123'
+                            }}>
+                              {project.name}
+                            </h3>
+                            {project.description && (
+                              <p style={{ 
+                                color: '#6b7280', 
+                                fontSize: '14px', 
+                                margin: '0 0 12px 0', 
+                                lineHeight: 1.4
+                              }}>
+                                {project.description}
+                              </p>
+                            )}
                       </div>
                     </div>
                     
                     {/* Project Actions */}
-                    <div style={{ display: 'flex', gap: 8 }}>
+                    <div style={{ display: 'flex', gap: '4px' }}>
                       <button 
-                        className="btn btn-ghost" 
-                        style={{ padding: '6px 12px', fontSize: '12px' }}
                         onClick={(e) => {
                           e.stopPropagation();
                           openEditModal(project);
+                        }}
+                        style={{ 
+                          padding: '6px 8px', 
+                          fontSize: '12px',
+                          borderRadius: '4px',
+                          background: 'transparent',
+                          color: '#6b7280',
+                          border: '1px solid #d1d5db',
+                          cursor: 'pointer'
                         }}
                       >
                         Edit
                       </button>
                       <button 
-                        className="btn btn-danger" 
-                        style={{ padding: '6px 12px', fontSize: '12px' }}
                         onClick={(e) => {
                           e.stopPropagation();
                           setShowDeleteModal(project);
+                        }}
+                        style={{ 
+                          padding: '6px 8px', 
+                          fontSize: '12px',
+                          borderRadius: '4px',
+                          background: 'transparent',
+                          color: '#ef4444',
+                          border: '1px solid #fecaca',
+                          cursor: 'pointer'
                         }}
                       >
                         Delete
@@ -396,23 +482,50 @@ export default function ProjectsPage() {
                     </div>
                   </div>
                   
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', color: 'var(--muted)', fontSize: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <span style={{ 
+                        color: '#6b7280', 
+                        fontSize: '12px',
+                        background: '#f3f4f6',
+                        padding: '2px 6px',
+                        borderRadius: '4px'
+                      }}>
                         {project.tickets?.length || 0} tickets
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', color: 'var(--muted)', fontSize: 14 }}>
+                      </span>
+                      <span style={{ 
+                        color: '#6b7280', 
+                        fontSize: '12px',
+                        background: '#f3f4f6',
+                        padding: '2px 6px',
+                        borderRadius: '4px'
+                      }}>
                         1 member
-                      </div>
+                      </span>
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                    <span style={{ 
+                      fontSize: '12px', 
+                      color: '#9ca3af'
+                    }}>
                       {new Date(project.createdAt).toLocaleDateString()}
-                    </div>
+                    </span>
                   </div>
                   
                   <Link href={`/projects/${project.id}`} style={{ textDecoration: 'none' }}>
-                    <button className="btn btn-secondary" style={{ width: '100%' }}>
-                      Open Project Board
+                    <button 
+                      style={{ 
+                        width: '100%',
+                        background: '#10a37f',
+                        border: 'none',
+                        padding: '8px 16px',
+                        borderRadius: '6px',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        color: 'white',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Open Board
                     </button>
                   </Link>
                 </div>

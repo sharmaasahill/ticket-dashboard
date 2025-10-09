@@ -46,29 +46,50 @@ html {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 10px;
   background-color: var(--primary);
   color: white;
-  padding: 10px 16px;
-  font-weight: 500;
-  font-size: 14px;
+  padding: 12px 20px;
+  font-weight: 600;
+  font-size: 15px;
   border: 1px solid var(--border);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   text-decoration: none;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .btn:hover {
   background-color: var(--primary-hover);
   border-color: var(--border-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
 }
 
 .btn:active {
   transform: translateY(0);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Button ripple effect */
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.btn:active::before {
+  width: 300px;
+  height: 300px;
 }
 
 .btn-secondary {
@@ -139,19 +160,36 @@ html {
 
 /* Card styles */
 .card {
-  background: var(--card);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  padding: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.card:hover::before {
+  transform: scaleX(1);
 }
 
 .card:hover {
-  border-color: var(--border-hover);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
+  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
 }
 
 .card-interactive {
@@ -160,7 +198,8 @@ html {
 
 .card-interactive:hover {
   border-color: var(--primary);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+  transform: translateY(-4px) scale(1.02);
 }
 
 /* Kanban column styles */
@@ -192,31 +231,52 @@ html {
 
 /* Ticket card styles */
 .ticket-card {
-  background: var(--card);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 12px;
-  border: 1px solid var(--border);
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
   cursor: grab;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.ticket-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+}
+
+.ticket-card:hover::before {
+  transform: scaleX(1);
 }
 
 .ticket-card:hover {
-  border-color: var(--border-hover);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
-  background: var(--card-hover);
+  border-color: rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
 }
 
 .ticket-card:active {
   cursor: grabbing;
-  transform: rotate(2deg);
+  transform: rotate(3deg) scale(1.05);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
 }
 
 .ticket-card.dragging {
-  opacity: 0.5;
-  transform: rotate(5deg);
+  opacity: 0.6;
+  transform: rotate(5deg) scale(1.05);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
 }
 
 /* Status badges */
@@ -387,10 +447,77 @@ html {
   background: rgba(239, 68, 68, 0.1);
 }
 
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+/* Loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Smooth page transitions */
+.page-enter {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.card-enter {
+  animation: slideInRight 0.4s ease-out;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .sidebar {
     transform: translateX(-100%);
+    transition: transform 0.3s ease;
   }
   
   .main-content {
@@ -410,5 +537,13 @@ html {
   .modal {
     padding: 24px;
     margin: 16px;
+  }
+  
+  .card {
+    padding: 20px;
+  }
+  
+  .ticket-card {
+    padding: 16px;
   }
 }
