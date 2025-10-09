@@ -4,7 +4,7 @@ A modern project management dashboard built with Next.js and NestJS, featuring e
 
 ## Live Demo
 
-- **Frontend**: [https://ticket-dashboard-demo.netlify.app](https://ticket-dashboard-demo.netlify.app)
+- **Frontend**: [https://ticket-dashboard-frontend.netlify.app](https://ticket-dashboard-frontend.netlify.app/)
 - **Backend API**: [https://ticket-dashboard-backend-j8pu.onrender.com](https://ticket-dashboard-backend-j8pu.onrender.com)
 
 ## Features
@@ -40,7 +40,7 @@ A modern project management dashboard built with Next.js and NestJS, featuring e
 ### Frontend
 - **Framework**: Next.js 15.5.4 with TypeScript
 - **State Management**: Zustand with persistence
-- **Styling**: Custom CSS with ChatGPT-inspired design
+- **Styling**: Custom CSS with Minimalist-inspired design
 - **Drag & Drop**: @dnd-kit for smooth ticket management
 - **HTTP Client**: Axios for API communication
 - **Real-time**: Socket.io-client for live updates
@@ -75,13 +75,11 @@ interface NotificationStrategy {
 
 class EmailNotificationStrategy implements NotificationStrategy {
   async send(user: User, message: string): Promise<void> {
-    // Send email notification
   }
 }
 
 class UINotificationStrategy implements NotificationStrategy {
   async send(user: User, message: string): Promise<void> {
-    // Send real-time UI notification
   }
 }
 ```
@@ -248,8 +246,7 @@ cd ticket-dashboard
 ```bash
 cd backend
 npm install
-cp .env.example .env
-# Configure your environment variables
+cp .env.example .env # Configure your environment variables
 npm run start:dev
 ```
 
@@ -257,8 +254,7 @@ npm run start:dev
 ```bash
 cd frontend
 npm install
-cp .env.local.example .env.local
-# Configure your environment variables
+cp .env.local.example .env.local # Configure your environment variables
 npm run dev
 ```
 
@@ -334,7 +330,7 @@ ticket-dashboard/
 ## UI/UX Features
 
 ### Design Philosophy
-- **Minimal & Clean**: ChatGPT-inspired design language
+- **Minimal & Clean**: Minimalist design language
 - **Professional**: Business-ready interface
 - **Responsive**: Works on all device sizes
 - **Accessible**: High contrast and keyboard navigation
