@@ -161,7 +161,7 @@ function DroppableColumn({
 export default function ProjectDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { token, logout } = useAuth();
+  const { token, logout, email } = useAuth();
   const { superOn, toggleSuper } = useUi();
   const projectId = params.id as string;
   const [project, setProject] = useState<Project | null>(null);
@@ -191,7 +191,15 @@ export default function ProjectDetailPage() {
     api.get(`/projects/${projectId}`).then(r => setProject(r.data)).catch(() => logout());
     
       const socket = getSocket();
-      joinProject(projectId, token ? 'user-' + Date.now() : undefined);
+      
+      // Ensure socket is connected
+      if (socket.connected) {
+        joinProject(projectId, email || 'anonymous');
+      } else {
+        socket.on('connect', () => {
+          joinProject(projectId, email || 'anonymous');
+        });
+      }
       
       socket.on('ticket:updated', (payload: { type: string; ticket: Ticket }) => {
         console.log('Received ticket update:', payload);
@@ -260,7 +268,7 @@ export default function ProjectDetailPage() {
   async function createTicket() {
     if (!title) return;
     try {
-      await api.post('/tickets', { projectId, title, description });
+      await api.post('/tickets', { projectId, title, description, authorEmail: email });
       setTitle("");
       setDescription("");
     } catch (error) {

@@ -17,10 +17,19 @@ export class TicketsService {
     return this.prisma.ticket.findUnique({ where: { id } });
   }
 
-  async create(input: { projectId: string; title: string; description?: string; authorId?: string }) {
-    // Find or create a default user for the author
+  async create(input: { projectId: string; title: string; description?: string; authorId?: string; authorEmail?: string }) {
+    // Find or create user for the author
     let authorId = input.authorId;
-    if (!authorId) {
+    if (!authorId && input.authorEmail) {
+      // Use the provided email to find or create user
+      const user = await this.prisma.user.upsert({
+        where: { email: input.authorEmail },
+        update: {},
+        create: { email: input.authorEmail, name: input.authorEmail.split('@')[0] }
+      });
+      authorId = user.id;
+    } else if (!authorId) {
+      // Fallback to system user
       const defaultUser = await this.prisma.user.upsert({
         where: { email: 'system@ticket-dashboard.local' },
         update: {},

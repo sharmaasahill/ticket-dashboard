@@ -22,9 +22,11 @@ export class AppGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage('join')
-  handleJoin(@MessageBody() data: { projectId: string; userId?: string }, client: Socket) {
+  handleJoin(client: Socket, data: { projectId: string; userId?: string }) {
     try {
       const room = `project:${data.projectId}`;
+      
+      // Join the client to the room
       client.join(room);
       
       // Track user connection
