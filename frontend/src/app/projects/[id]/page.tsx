@@ -35,6 +35,10 @@ interface Ticket {
   id: string;
   title: string;
   authorId?: string;
+  author?: {
+    id: string;
+    email: string;
+  };
   status: 'TODO' | 'IN_PROGRESS' | 'DONE';
   description?: string;
 }
