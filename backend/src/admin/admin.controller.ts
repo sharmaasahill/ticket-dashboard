@@ -12,7 +12,10 @@ class SuperVerifyDto {
 export class AdminController {
   @Post('super-verify')
   verifySuperPassword(@Body() dto: SuperVerifyDto) {
-    const expectedPassword = process.env.SUPER_PASSWORD || 'admin123';
+    const expectedPassword = process.env.SUPER_PASSWORD;
+    if (!expectedPassword) {
+      throw new Error('SUPER_PASSWORD environment variable is not configured');
+    }
     const isValid = dto.password === expectedPassword;
     return { ok: isValid };
   }
