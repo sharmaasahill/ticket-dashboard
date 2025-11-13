@@ -25,8 +25,9 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
     try {
       await issueOtp(email);
       setSent(true);
-    } catch (error: any) {
-      setError(error?.response?.data?.message || 'Failed to send OTP. Please try again.');
+    } catch (error: unknown) {
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setError(errorMessage || 'Failed to send OTP. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -40,8 +41,9 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
       await verifyOtp(email, code);
       onSuccess();
       onClose();
-    } catch (error: any) {
-      setError(error?.response?.data?.message || 'Invalid code. Please try again.');
+    } catch (error: unknown) {
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setError(errorMessage || 'Invalid code. Please try again.');
     } finally {
       setLoading(false);
     }

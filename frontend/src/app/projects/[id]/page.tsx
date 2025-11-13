@@ -350,14 +350,14 @@ export default function ProjectDetailPage() {
       socket.off('ticket:updated');
       socket.off('reconnect');
     };
-  }, [projectId, token, logout, router]);
+  }, [projectId, token, logout, router, email]);
 
   // Initialize auth token on mount
   useEffect(() => {
     if (token) {
       setAuthToken(token);
     }
-  }, []);
+  }, [token]);
 
   // Keyboard shortcuts
   useEffect(() => {
