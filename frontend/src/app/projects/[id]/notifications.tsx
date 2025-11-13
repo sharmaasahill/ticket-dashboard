@@ -17,12 +17,12 @@ export function Notifications({ projectId }: { projectId: string }) {
     api.get(`/activities/${projectId}`).then(r => setItems(r.data));
   }, [projectId]);
 
-  const getActivityIcon = (type: string) => {
+  const getActivityType = (type: string) => {
     switch (type) {
-      case 'create': return '➕';
-      case 'update': return '✏️';
-      case 'move': return '🔄';
-      default: return '📝';
+      case 'create': return 'Created';
+      case 'update': return 'Updated';
+      case 'move': return 'Moved';
+      default: return 'Activity';
     }
   };
 
@@ -30,13 +30,13 @@ export function Notifications({ projectId }: { projectId: string }) {
     <div className="card">
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
         <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0, color: '#1e293b' }}>
-          🔔 Recent Activity
+          Recent Activity
         </h3>
         <span style={{ 
           marginLeft: 8, 
           fontSize: 12, 
-          background: '#f1f5f9', 
-          color: '#64748b', 
+          background: '#1a1a1a',
+          color: '#9ca3af',
           padding: '2px 8px', 
           borderRadius: 12 
         }}>
@@ -46,7 +46,6 @@ export function Notifications({ projectId }: { projectId: string }) {
       
       {items.length === 0 ? (
         <div style={{ textAlign: 'center', padding: 24, color: '#94a3b8' }}>
-          <div style={{ fontSize: 24, marginBottom: 8 }}>📭</div>
           <p style={{ margin: 0, fontSize: 14 }}>No activity yet</p>
         </div>
       ) : (
@@ -58,17 +57,21 @@ export function Notifications({ projectId }: { projectId: string }) {
                 display: 'flex', 
                 alignItems: 'flex-start', 
                 padding: '12px 0', 
-                borderBottom: '1px solid #f1f5f9',
+                borderBottom: '1px solid #2a2a2a',
                 fontSize: 14
               }}
             >
               <div style={{ 
-                fontSize: 16, 
+                fontSize: 11, 
                 marginRight: 12, 
                 marginTop: 2,
-                minWidth: 20
+                minWidth: 60,
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                color: '#9ca3af',
+                fontWeight: '500'
               }}>
-                {getActivityIcon(activity.type)}
+                {getActivityType(activity.type)}
               </div>
               <div style={{ flex: 1 }}>
                 <p style={{ margin: '0 0 4px 0', color: '#1e293b' }}>

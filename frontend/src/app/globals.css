@@ -1,26 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --card: #ffffff;
-  --card-hover: #f8f9fa;
-  --border: #e5e7eb;
-  --border-hover: #d1d5db;
-  --primary: #10a37f;
-  --primary-hover: #0d8a6b;
+  --background: #0f0f0f;
+  --foreground: #ffffff;
+  --card: #1a1a1a;
+  --card-hover: #252525;
+  --border: #2a2a2a;
+  --border-hover: #3a3a3a;
+  --primary: #ffffff;
+  --primary-hover: #e5e5e5;
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
-  --muted: #6b7280;
-  --accent: #8b5cf6;
-  --sidebar: #f7f7f8;
-  --sidebar-hover: #ececf1;
-  --text-primary: #1a1a1a;
-  --text-secondary: #6b7280;
+  --muted: #9ca3af;
+  --accent: #6366f1;
+  --sidebar: #141414;
+  --sidebar-hover: #1f1f1f;
+  --text-primary: #ffffff;
+  --text-secondary: #d1d5db;
   --text-muted: #9ca3af;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
 }
 
 body {
@@ -39,6 +39,7 @@ body {
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 80px;
 }
 
 /* Modern button styles */
@@ -109,8 +110,8 @@ html {
 }
 
 .btn-success:hover {
-  background-color: #059669;
-  border-color: #059669;
+  background-color: #252525;
+  border-color: #252525;
 }
 
 .btn-danger {
@@ -527,6 +528,52 @@ html {
   .grid-3 {
     grid-template-columns: 1fr;
   }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Interactive card animations */
+.project-card .card-actions {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.project-card:hover .card-actions {
+  opacity: 1;
+}
+
+.stat-badge:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  transform: scale(1.05);
+}
+
+.gradient-overlay {
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.button-arrow {
+  display: inline-block;
+}
+
+button:hover .button-arrow {
+  transform: translateX(4px);
 }
 
 @media (max-width: 768px) {

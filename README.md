@@ -1,11 +1,11 @@
-# Ticket Dashboard
+# Pulse
 
-A modern project management dashboard built with Next.js and NestJS, featuring email-based authentication, real-time ticket management, and collaborative workspace functionality.
+**Version 2.0** - A modern project management dashboard built with Next.js and NestJS, featuring email-based authentication, real-time ticket management, and collaborative workspace functionality. Experience a sleek dark theme interface with an elegant landing page and intuitive project management tools.
 
 ## Live Demo
 
-- **Frontend**: [https://ticket-dashboard-frontend.netlify.app](https://ticket-dashboard-frontend.netlify.app/)
-- **Backend API**: [https://ticket-dashboard-backend-j8pu.onrender.com](https://ticket-dashboard-backend-j8pu.onrender.com)
+- **Frontend**: [https://pulse-frontend.netlify.app](https://pulse-frontend.netlify.app/)
+- **Backend API**: [https://pulse-backend.onrender.com](https://pulse-backend.onrender.com)
 
 ## Features
 
@@ -17,7 +17,9 @@ A modern project management dashboard built with Next.js and NestJS, featuring e
 ### Project Management
 - **Project CRUD Operations**: Create, read, update, and delete projects
 - **Bulk Operations**: Select and delete multiple projects simultaneously
-- **Project Dashboard**: Clean, organized view of all projects with metadata
+- **Enhanced Dashboard**: Modern project dashboard with search, sorting, and view modes (grid/list)
+- **Project Statistics**: Real-time statistics including total projects, tickets, and completion rates
+- **Interactive Cards**: Hover effects, progress indicators, and quick actions
 
 ### Ticket Management
 - **Kanban Board**: Drag-and-drop ticket management across status columns
@@ -40,10 +42,12 @@ A modern project management dashboard built with Next.js and NestJS, featuring e
 ### Frontend
 - **Framework**: Next.js 15.5.4 with TypeScript
 - **State Management**: Zustand with persistence
-- **Styling**: Custom CSS with Minimalist-inspired design
+- **Styling**: Custom CSS with modern dark theme (#0f0f0f, #1a1a1a, #2a2a2a)
+- **UI Components**: Landing page with hero section, features showcase, and CTA
 - **Drag & Drop**: @dnd-kit for smooth ticket management
 - **HTTP Client**: Axios for API communication
 - **Real-time**: Socket.io-client for live updates
+- **Navigation**: Seamless routing with Next.js App Router
 
 ### Backend
 - **Framework**: NestJS with TypeScript
@@ -63,170 +67,6 @@ A modern project management dashboard built with Next.js and NestJS, featuring e
 - **Backend**: Render
 - **Database**: Neon PostgreSQL
 
-## Architecture & Design Patterns
-
-### Backend Design Patterns
-
-#### 1. **Strategy Pattern** - Notification System
-```typescript
-interface NotificationStrategy {
-  send(user: User, message: string): Promise<void>;
-}
-
-class EmailNotificationStrategy implements NotificationStrategy {
-  async send(user: User, message: string): Promise<void> {
-  }
-}
-
-class UINotificationStrategy implements NotificationStrategy {
-  async send(user: User, message: string): Promise<void> {
-  }
-}
-```
-
-#### 2. **Factory Pattern** - Ticket Creation
-```typescript
-class TicketFactory {
-  static createTicket(data: CreateTicketDto, author: User): Ticket {
-    return {
-      id: generateId(),
-      title: data.title,
-      description: data.description,
-      status: TicketStatus.TODO,
-      authorId: author.id,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-  }
-}
-```
-
-#### 3. **Observer Pattern** - Real-time Updates
-```typescript
-class RealtimeService {
-  private observers: Observer[] = [];
-  
-  subscribe(observer: Observer): void {
-    this.observers.push(observer);
-  }
-  
-  notify(data: any): void {
-    this.observers.forEach(observer => observer.update(data));
-  }
-}
-```
-
-#### 4. **Repository Pattern** - Data Access
-```typescript
-@Injectable()
-export class ProjectsRepository {
-  constructor(private prisma: PrismaService) {}
-  
-  async findById(id: string): Promise<Project | null> {
-    return this.prisma.project.findUnique({
-      where: { id },
-      include: { tickets: true }
-    });
-  }
-}
-```
-
-#### 5. **Module Pattern** - Dependency Injection
-```typescript
-@Module({
-  imports: [PrismaModule, MailModule],
-  providers: [ProjectsService, ProjectsRepository],
-  controllers: [ProjectsController],
-  exports: [ProjectsService]
-})
-export class ProjectsModule {}
-```
-
-### Frontend Architecture
-
-#### State Management with Zustand
-```typescript
-interface AuthStore {
-  token: string | null;
-  email: string | null;
-  login: (token: string, email: string) => void;
-  logout: () => void;
-}
-
-const useAuthStore = create<AuthStore>((set) => ({
-  token: null,
-  email: null,
-  login: (token, email) => set({ token, email }),
-  logout: () => set({ token: null, email: null })
-}));
-```
-
-#### Component Architecture
-- **Atomic Design**: Reusable components with clear hierarchy
-- **Custom Hooks**: Business logic separation from UI components
-- **Type Safety**: Full TypeScript implementation across all components
-
-## Database Design
-
-### Why PostgreSQL?
-
-**Chosen over NoSQL for the following reasons:**
-
-1. **ACID Compliance**: Ensures data integrity for critical operations
-2. **Relational Data**: Natural fit for user-project-ticket relationships
-3. **Complex Queries**: Support for advanced filtering and reporting
-4. **Data Consistency**: Strong consistency guarantees for collaborative features
-5. **Mature Ecosystem**: Excellent tooling and community support
-
-### Database Schema
-
-```sql
--- Users table
-CREATE TABLE "User" (
-  "id" TEXT PRIMARY KEY,
-  "email" TEXT UNIQUE NOT NULL,
-  "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Projects table
-CREATE TABLE "Project" (
-  "id" TEXT PRIMARY KEY,
-  "name" TEXT NOT NULL,
-  "description" TEXT,
-  "ownerId" TEXT NOT NULL,
-  "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY ("ownerId") REFERENCES "User"("id")
-);
-
--- Tickets table
-CREATE TABLE "Ticket" (
-  "id" TEXT PRIMARY KEY,
-  "title" TEXT NOT NULL,
-  "description" TEXT,
-  "status" "TicketStatus" DEFAULT 'TODO',
-  "projectId" TEXT NOT NULL,
-  "authorId" TEXT NOT NULL,
-  "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY ("projectId") REFERENCES "Project"("id"),
-  FOREIGN KEY ("authorId") REFERENCES "User"("id")
-);
-
--- Activities table for notifications
-CREATE TABLE "Activity" (
-  "id" TEXT PRIMARY KEY,
-  "type" TEXT NOT NULL,
-  "description" TEXT NOT NULL,
-  "projectId" TEXT NOT NULL,
-  "userId" TEXT NOT NULL,
-  "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY ("projectId") REFERENCES "Project"("id"),
-  FOREIGN KEY ("userId") REFERENCES "User"("id")
-);
-```
-
 ## Getting Started
 
 ### Prerequisites
@@ -238,8 +78,8 @@ CREATE TABLE "Activity" (
 
 1. **Clone the repository**
 ```bash
-git clone https://github.com/sharmaasahill/ticket-dashboard.git
-cd ticket-dashboard
+git clone https://github.com/sharmaasahill/pulse.git
+cd pulse
 ```
 
 2. **Backend Setup**
@@ -280,7 +120,7 @@ NEXT_PUBLIC_API_URL="http://localhost:3001"
 ## Project Structure
 
 ```
-ticket-dashboard/
+pulse/
 ├── backend/
 │   ├── src/
 │   │   ├── auth/           # Authentication module
@@ -297,9 +137,10 @@ ticket-dashboard/
 ├── frontend/
 │   ├── src/
 │   │   ├── app/            # Next.js app directory
-│   │   │   ├── page.tsx    # Login page
+│   │   │   ├── page.tsx    # Landing page
+│   │   │   ├── components/ # Reusable components (Navbar, LoginModal)
 │   │   │   ├── projects/   # Project pages
-│   │   │   └── globals.css # Global styles
+│   │   │   └── globals.css # Global styles and theme variables
 │   │   ├── lib/            # Utilities and API client
 │   │   └── store/          # Zustand stores
 │   └── package.json
@@ -327,49 +168,6 @@ ticket-dashboard/
 ### Admin
 - `POST /admin/super-verify` - Verify super user password
 
-## UI/UX Features
-
-### Design Philosophy
-- **Minimal & Clean**: Minimalist design language
-- **Professional**: Business-ready interface
-- **Responsive**: Works on all device sizes
-- **Accessible**: High contrast and keyboard navigation
-
-### Key UI Components
-- **Login Page**: Clean OTP-based authentication
-- **Project Dashboard**: Card-based project overview
-- **Kanban Board**: Drag-and-drop ticket management
-- **Real-time Notifications**: Live activity feed
-- **Super User Toggle**: Password-protected admin mode
-
-## Security Features
-
-- **JWT Authentication**: Secure token-based auth
-- **Input Validation**: Server-side validation for all inputs
-- **CORS Protection**: Configured for production
-- **SQL Injection Prevention**: Prisma ORM protection
-- **XSS Protection**: React's built-in XSS prevention
-
-## Performance Optimizations
-
-- **Code Splitting**: Next.js automatic code splitting
-- **Image Optimization**: Next.js image optimization
-- **Bundle Analysis**: Optimized bundle sizes
-- **Database Indexing**: Proper database indexes
-- **Caching**: Strategic caching implementation
-
-## Testing
-
-```bash
-# Backend tests
-cd backend
-npm run test
-
-# Frontend tests
-cd frontend
-npm run test
-```
-
 ## Deployment
 
 ### Frontend (Netlify)
@@ -389,32 +187,24 @@ npm run test
 2. Run migrations: `npx prisma migrate deploy`
 3. Update DATABASE_URL in backend environment
 
-## Contributing
+## Version History
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+### Version 2.0 (Current)
+- Complete rebranding to "Pulse"
+- Modern dark theme implementation
+- Enhanced landing page with hero section
+- Improved project dashboard with search, sorting, and statistics
+- Better navigation and user experience
+- Removed emoji icons for professional appearance
 
-## License
-
-This project is licensed under the MIT License.
+### Version 1.0
+- Initial release with basic project and ticket management
+- Email-based OTP authentication
+- Real-time collaboration features
+- Kanban board with drag-and-drop
 
 ## Author
 
 **Sahil Sharma**
 - Email: i.sahilkrsharma@gmail.com
 - GitHub: [@sharmaasahill](https://github.com/sharmaasahill)
-
-## Acknowledgments
-
-- Next.js team for the amazing framework
-- NestJS team for the robust backend framework
-- Prisma team for the excellent ORM
-- SendGrid for email services
-- All open-source contributors
-
----
-
-**Note**: This project was built as a demonstration of modern full-stack development practices with TypeScript, featuring real-time collaboration, secure authentication, and professional UI/UX design.

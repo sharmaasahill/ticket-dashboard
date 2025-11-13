@@ -76,13 +76,13 @@ function DraggableTicket({
       style={{ 
         ...style, 
         cursor: 'grab',
-        background: '#ffffff',
+        background: '#1a1a1a',
         borderRadius: '6px',
         padding: '12px',
         marginBottom: '8px',
         borderWidth: '1px',
         borderStyle: 'solid',
-        borderColor: '#d1d5db',
+        borderColor: '#2a2a2a',
         transition: 'border-color 0.2s',
         position: 'relative'
       }}
@@ -90,11 +90,13 @@ function DraggableTicket({
       {...listeners}
       className="ticket-card"
       onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = '#10a37f';
+        e.currentTarget.style.borderColor = '#3a3a3a';
+        e.currentTarget.style.background = '#252525';
       }}
       onMouseLeave={(e) => {
         if (!isDragging) {
-          e.currentTarget.style.borderColor = '#e5e7eb';
+          e.currentTarget.style.borderColor = '#2a2a2a';
+          e.currentTarget.style.background = '#1a1a1a';
         }
       }}
     >
@@ -125,8 +127,8 @@ function DraggableTicket({
             height: '20px',
             borderRadius: '4px',
             border: 'none',
-            background: '#f3f4f6',
-            color: '#6b7280',
+            background: '#1a1a1a',
+            color: '#9ca3af',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
@@ -134,7 +136,7 @@ function DraggableTicket({
             fontSize: '10px'
           }}
         >
-          ✏️
+          Edit
         </button>
         <button
           onClick={(e) => {
@@ -155,7 +157,7 @@ function DraggableTicket({
             fontSize: '10px'
           }}
         >
-          🗑️
+          Delete
         </button>
       </div>
 
@@ -164,7 +166,7 @@ function DraggableTicket({
           fontSize: '14px', 
           fontWeight: '600', 
           margin: '0 0 4px 0', 
-          color: '#202123',
+          color: '#ffffff',
           lineHeight: 1.4
         }}>
           {ticket.title}
@@ -172,7 +174,7 @@ function DraggableTicket({
         {ticket.description && (
           <p style={{ 
             fontSize: '12px', 
-            color: '#6e6e80', 
+            color: '#9ca3af', 
             margin: '0 0 8px 0', 
             lineHeight: 1.4
           }}>
@@ -185,10 +187,10 @@ function DraggableTicket({
         <div style={{ 
           fontSize: '11px', 
           color: '#9ca3af', 
-          borderTop: '1px solid #d1d5db', 
+          borderTop: '1px solid #2a2a2a', 
           paddingTop: '8px',
           marginTop: '8px',
-          background: '#f9fafb',
+          background: '#1a1a1a',
           padding: '4px 8px',
           borderRadius: '4px'
         }}>
@@ -203,7 +205,6 @@ function DraggableTicket({
 function DroppableColumn({ 
   id, 
   title, 
-  icon, 
   tickets, 
   superOn, 
   className,
@@ -212,7 +213,6 @@ function DroppableColumn({
 }: { 
   id: string; 
   title: string; 
-  icon: string; 
   tickets: Ticket[]; 
   superOn: boolean; 
   className: string;
@@ -223,20 +223,20 @@ function DroppableColumn({
 
   const getColumnStyle = () => {
     const baseStyle = {
-      background: '#ffffff',
+      background: '#1a1a1a',
       borderRadius: '8px',
       padding: '16px',
       minHeight: '400px',
       borderWidth: '1px',
       borderStyle: 'solid',
-      borderColor: '#d1d5db'
+      borderColor: '#2a2a2a'
     };
 
     if (isOver) {
       return {
         ...baseStyle,
-        borderColor: '#10a37f',
-        background: '#f0fdf4'
+        borderColor: '#ffffff',
+        background: '#1a1a1a'
       };
     }
 
@@ -250,7 +250,7 @@ function DroppableColumn({
       style={getColumnStyle()}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: '600', margin: 0, color: '#202123' }}>
+        <h3 style={{ fontSize: '14px', fontWeight: '600', margin: 0, color: '#ffffff' }}>
           {title}
         </h3>
         <span style={{
@@ -260,8 +260,9 @@ function DroppableColumn({
           borderRadius: '12px',
           fontSize: '12px',
           fontWeight: '500',
-          background: '#f3f4f6',
-          color: '#6b7280'
+            background: '#1a1a1a',
+            color: '#ffffff',
+            border: '1px solid #2a2a2a'
         }}>
           {tickets.length}
         </span>
@@ -469,20 +470,20 @@ export default function ProjectDetailPage() {
   if (!project) return <div style={{ padding: 24 }}>Loading...</div>;
 
   return (
-     <div style={{ background: '#ffffff', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }}>
+      <div style={{ background: '#0f0f0f', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', color: '#ffffff' }}>
       {/* Header */}
       <div className="header" style={{
-        background: '#ffffff',
-        borderBottom: '1px solid #d1d5db',
+        background: '#1a1a1a',
+        borderBottom: '1px solid #2a2a2a',
         padding: '20px 0'
       }}>
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <h1 style={{ fontSize: '20px', fontWeight: '600', margin: 0, color: '#202123' }}>
+              <h1 style={{ fontSize: '20px', fontWeight: '600', margin: 0, color: '#ffffff' }}>
                 {project.name}
               </h1>
-              <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: '14px' }}>
+              <p style={{ margin: '4px 0 0 0', color: '#9ca3af', fontSize: '14px' }}>
                 {(project.tickets ?? []).length} tickets
               </p>
             </div>
@@ -495,8 +496,8 @@ export default function ProjectDetailPage() {
                   } else toggleSuper();
                 }}
                 style={{
-                  background: superOn ? '#10a37f' : '#f3f4f6',
-                  color: superOn ? 'white' : '#6b7280',
+                  background: superOn ? '#ffffff' : '#1a1a1a',
+                  color: superOn ? '#0f0f0f' : '#9ca3af',
                   border: 'none',
                   padding: '8px 12px',
                   borderRadius: '6px',
@@ -511,8 +512,8 @@ export default function ProjectDetailPage() {
                 onClick={() => router.push('/projects')}
                 style={{
                   background: 'transparent',
-                  color: '#6b7280',
-                  border: '1px solid #d1d5db',
+                  color: '#9ca3af',
+                  border: '1px solid #2a2a2a',
                   padding: '8px 12px',
                   borderRadius: '6px',
                   fontWeight: '500',
@@ -532,13 +533,13 @@ export default function ProjectDetailPage() {
         {/* Search and Add Ticket Form */}
         <div style={{ 
           marginBottom: '24px',
-          background: '#ffffff',
-          border: '1px solid #d1d5db',
+          background: '#1a1a1a',
+          border: '1px solid #2a2a2a',
           borderRadius: '8px',
           padding: '20px'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#202123' }}>
+            <h2 style={{ fontSize: '16px', fontWeight: '600', margin: 0, color: '#ffffff' }}>
               Add New Ticket
             </h2>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -551,9 +552,10 @@ export default function ProjectDetailPage() {
                   width: '200px',
                   padding: '8px 12px',
                   borderRadius: '6px',
-                  border: '1px solid #d1d5db',
-                  background: '#ffffff',
-                  fontSize: '14px'
+                  border: '1px solid #2a2a2a',
+                  background: '#0f0f0f',
+                  fontSize: '14px',
+                  color: '#ffffff'
                 }}
               />
             </div>
@@ -568,9 +570,10 @@ export default function ProjectDetailPage() {
               style={{
                 padding: '10px 12px',
                 borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                background: '#ffffff',
-                fontSize: '14px'
+                border: '1px solid #2a2a2a',
+                background: '#0f0f0f',
+                fontSize: '14px',
+                color: '#ffffff'
               }}
             />
             <textarea 
@@ -584,21 +587,22 @@ export default function ProjectDetailPage() {
                 minHeight: '60px',
                 padding: '10px 12px',
                 borderRadius: '6px',
-                border: '1px solid #d1d5db',
-                background: '#ffffff',
-                fontSize: '14px'
+                border: '1px solid #2a2a2a',
+                background: '#0f0f0f',
+                fontSize: '14px',
+                color: '#ffffff'
               }}
             />
             <button 
               onClick={createTicket}
               style={{
-                background: '#10a37f',
+                background: '#ffffff',
                 border: 'none',
                 padding: '10px 16px',
                 borderRadius: '6px',
                 fontSize: '14px',
                 fontWeight: '500',
-                color: 'white',
+                color: '#0f0f0f',
                 cursor: 'pointer',
                 alignSelf: 'flex-start'
               }}
@@ -618,7 +622,6 @@ export default function ProjectDetailPage() {
             <DroppableColumn
               id="TODO"
               title="To Do"
-              icon="📋"
               tickets={filteredTickets(project.tickets ?? [], 'TODO')}
               superOn={superOn}
               className="todo"
@@ -628,7 +631,6 @@ export default function ProjectDetailPage() {
             <DroppableColumn
               id="IN_PROGRESS"
               title="In Progress"
-              icon="⚡"
               tickets={filteredTickets(project.tickets ?? [], 'IN_PROGRESS')}
               superOn={superOn}
               className="in-progress"
@@ -638,7 +640,6 @@ export default function ProjectDetailPage() {
             <DroppableColumn
               id="DONE"
               title="Done"
-              icon="✅"
               tickets={filteredTickets(project.tickets ?? [], 'DONE')}
               superOn={superOn}
               className="done"

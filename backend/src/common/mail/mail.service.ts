@@ -22,11 +22,11 @@ export class MailService {
       const msg = {
         to: email,
         from: fromEmail,
-        subject: 'Your Ticket Dashboard Login Code',
+        subject: 'Your Pulse Login Code',
         text: `Your verification code is: ${code}\n\nThis code expires in 10 minutes.\n\nIf you didn't request this code, please ignore this email.`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">Ticket Dashboard Login</h2>
+            <h2 style="color: #333;">Pulse Login</h2>
             <p>Your verification code is:</p>
             <div style="background: #f4f4f4; padding: 20px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 4px; margin: 20px 0; border-radius: 8px;">
               ${code}
@@ -34,7 +34,7 @@ export class MailService {
             <p>This code expires in 10 minutes.</p>
             <p>If you didn't request this code, please ignore this email.</p>
             <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-            <p style="color: #666; font-size: 12px;">Ticket Dashboard - Project Management Tool</p>
+            <p style="color: #666; font-size: 12px;">Pulse - Project Management Tool</p>
           </div>
         `,
       };
@@ -60,21 +60,21 @@ export class MailService {
       const msg = {
         to: email,
         from: fromEmail,
-        subject: 'Ticket Dashboard - Activity Update',
+        subject: 'Pulse - Activity Update',
         text: `You have a new activity update:\n\n${message}\n\nVisit your dashboard to see the latest changes.`,
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">Ticket Dashboard Update</h2>
+            <h2 style="color: #333;">Pulse Update</h2>
             <p>You have a new activity update:</p>
             <div style="background: #f8f9fa; padding: 20px; border-left: 4px solid #007bff; margin: 20px 0; border-radius: 4px;">
               ${message}
             </div>
             <p>Visit your dashboard to see the latest changes and stay updated with your team.</p>
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://ticket-dashboard-frontend.netlify.app" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Open Dashboard</a>
+              <a href="https://pulse-frontend.netlify.app" style="background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">Open Dashboard</a>
             </div>
             <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-            <p style="color: #666; font-size: 12px;">Ticket Dashboard - Project Management Tool</p>
+            <p style="color: #666; font-size: 12px;">Pulse - Project Management Tool</p>
           </div>
         `,
       };

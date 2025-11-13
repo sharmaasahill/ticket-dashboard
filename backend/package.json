@@ -1,7 +1,7 @@
 {
-  "name": "ticket-dashboard-backend",
-  "version": "1.0.0",
-  "description": "Backend API for Ticket Dashboard - A modern project management tool",
+  "name": "pulse-backend",
+  "version": "2.0.0",
+  "description": "Backend API for Pulse - A modern project management tool",
   "author": "Sahil Sharma",
   "private": true,
   "license": "MIT",

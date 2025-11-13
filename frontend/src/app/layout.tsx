@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ticket Dashboard",
-  description: "Project management dashboard",
+  title: "Pulse",
+  description: "Pulse - Modern project management dashboard with real-time collaboration",
 };
 
 export default function RootLayout({

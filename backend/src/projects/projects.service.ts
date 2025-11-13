@@ -15,9 +15,9 @@ export class ProjectsService {
     if (!ownerId) {
       // Find or create a default user
       const defaultUser = await this.prisma.user.upsert({
-        where: { email: 'system@ticket-dashboard.local' },
+        where: { email: 'system@pulse.local' },
         update: {},
-        create: { email: 'system@ticket-dashboard.local', name: 'System' }
+        create: { email: 'system@pulse.local', name: 'System' }
       });
       ownerId = defaultUser.id;
     }
