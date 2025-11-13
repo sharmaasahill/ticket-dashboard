@@ -4,8 +4,8 @@
 
 ## Live Demo
 
-- **Frontend**: [https://pulse-frontend.netlify.app](https://pulse-frontend.netlify.app/)
-- **Backend API**: [https://pulse-backend.onrender.com](https://pulse-backend.onrender.com)
+- **Frontend**: [https://pulse-front.netlify.app](https://pulse-front.netlify.app/)
+- **Backend API**: [https://ticket-dashboard-backend-j8pu.onrender.com](https://ticket-dashboard-backend-j8pu.onrender.com)
 
 ## Features
 
